@@ -109,6 +109,12 @@ func ResourceServiceEndpointGenericV2() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"validate_input": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether to validate the provided service endpoint configuration against the service endpoint type definition. Enabling this will cause the provider to return an error if the configuration is invalid.",
+			},
 		},
 	}
 }
@@ -301,9 +307,12 @@ func resourceServiceEndpointGenericV2Create(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// Validate the service endpoint configuration
-	if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
-		return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
+	// Validate the service endpoint configuration if validate_input is enabled
+	validateInput := d.Get("validate_input").(bool)
+	if validateInput {
+		if err := validateServiceEndpointSchema(clients, *config, false); err != nil {
+			return diag.FromErr(fmt.Errorf("service endpoint validation failed: %w", err))
+		}
 	}
 
 	// Create the service endpoint
@@ -627,22 +636,30 @@ func resourceServiceEndpointGenericV2Update(ctx context.Context, d *schema.Resou
 	return resourceServiceEndpointGenericV2Read(ctx, d, m)
 }
 
-// updateServiceEndpointFromResourceData updates a service endpoint with values from resource data
+// updateServiceEndpointFromResourceData updates a service endpoint with values from resource data.
+//
+// Each field is only overwritten on the endpoint returned by the API when the corresponding
+// attribute has actually changed in the Terraform plan. This way, attributes excluded via the
+// `ignore_changes` lifecycle meta-argument are preserved as-is (Terraform reports `HasChange`
+// as false for ignored attributes, so we leave the API value untouched).
+//
+// Authorization is a special case: the API returns masked/empty values for sensitive
+// parameters, so we must always reconstruct the authorization block from the Terraform state
+// (which still holds the real credentials) whenever any auth-related field has changed.
 func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
-	// Update fields that have changed
 	if d.HasChange("name") {
 		endpoint.Name = converter.String(d.Get("name").(string))
 	}
-
 	if d.HasChange("description") {
 		endpoint.Description = converter.String(d.Get("description").(string))
 	}
-
 	if d.HasChange("server_url") {
 		endpoint.Url = converter.String(d.Get("server_url").(string))
 	}
 
-	// Handle authorization updates if any auth fields changed
+	// Rebuild authorization from Terraform state when any auth field changed. The API
+	// returns masked values for sensitive parameters, so we never rely on the API response
+	// for these – the state always holds the real credentials.
 	if d.HasChange("authorization_scheme") || d.HasChange("authorization_parameters") {
 		authScheme, authParams, err := getAuthorizationDetails(d)
 		if err != nil {
@@ -654,13 +671,14 @@ func updateServiceEndpointFromResourceData(d *schema.ResourceData, endpoint *ser
 		}
 	}
 
-	// Handle data updates if changed
 	if d.HasChange("parameters") {
 		data, err := toStringMap(d.Get("parameters"), "parameters")
 		if err != nil {
 			return nil, err
 		}
-		endpoint.Data = &data
+		if len(data) > 0 {
+			endpoint.Data = &data
+		}
 	}
 
 	return endpoint, nil
@@ -790,6 +808,12 @@ func deleteServiceEndpointGenericV2(ctx context.Context, clients *client.Aggrega
 func customizeServiceEndpointGenericV2Diff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
 	// Only validate on resource creation changes
 	if d.Id() != "" {
+		return nil
+	}
+
+	// Only validate if validate_input is enabled
+	validateInput := d.Get("validate_input").(bool)
+	if !validateInput {
 		return nil
 	}
 
