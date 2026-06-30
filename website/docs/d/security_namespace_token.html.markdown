@@ -135,6 +135,89 @@ output "build_def_token" {
 }
 ```
 
+~> **NOTE:** When `definition_id` is provided for the **Build** namespace, the definition's folder path is automatically fetched from the Azure DevOps API and included in the generated token.
+
+### Build Folder Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_security_namespace_token" "build_folder" {
+  namespace_name = "Build"
+  identifiers = {
+    project_id = data.azuredevops_project.example.id
+    path       = "MyFolder/MySubFolder"
+  }
+}
+
+output "build_folder_token" {
+  value = data.azuredevops_security_namespace_token.build_folder.token
+}
+```
+
+### Build Project-level Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_security_namespace_token" "build_project" {
+  namespace_name = "Build"
+  identifiers = {
+    project_id = data.azuredevops_project.example.id
+  }
+}
+
+output "build_project_token" {
+  value = data.azuredevops_security_namespace_token.build_project.token
+}
+```
+
+### Release Definition Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_security_namespace_token" "release_def" {
+  namespace_name = "ReleaseManagement2"
+  identifiers = {
+    project_id    = data.azuredevops_project.example.id
+    definition_id = "42"
+  }
+}
+
+output "release_def_token" {
+  value = data.azuredevops_security_namespace_token.release_def.token
+}
+```
+
+~> **NOTE:** When `definition_id` is provided for the **ReleaseManagement2** namespace, the definition's folder path is automatically fetched from the Azure DevOps API and included in the generated token.
+
+### Release Folder Token
+
+```hcl
+data "azuredevops_project" "example" {
+  name = "Example Project"
+}
+
+data "azuredevops_security_namespace_token" "release_folder" {
+  namespace_name = "ReleaseManagement2"
+  identifiers = {
+    project_id = data.azuredevops_project.example.id
+    path       = "MyFolder"
+  }
+}
+
+output "release_folder_token" {
+  value = data.azuredevops_security_namespace_token.release_folder.token
+}
+```
+
 ### Using Namespace ID
 
 ```hcl
@@ -163,6 +246,8 @@ The following arguments are supported:
   - `BuildAdministration` - Build administration permissions
   - `Server` - Server-level permissions
   - `VersionControlPrivileges` - Version control privileges
+  - `ReleaseManagement2` - Folder or release definition level release management permissions (path is auto-fetched from API when `definition_id` is provided)
+  - `Build` - Build definition, folder, or project-level permissions (path is auto-fetched from API when `definition_id` is provided)
 
 * `identifiers` - (Optional) A map of identifiers required for token generation. The required identifiers depend on the namespace. Not used when `return_identifier_info` is `true`.
 
@@ -174,24 +259,31 @@ The following arguments are supported:
 
 Different namespaces require different identifiers:
 
-| Namespace | Required Identifiers | Optional Identifiers | Example |
-|-----------|---------------------|---------------------|---------|
-| **Git Repositories** | `project_id` | `repository_id`, `ref_name` | `{project_id = "...", repository_id = "..."}` |
-| **Project** | `project_id` | None | `{project_id = "..."}` |
-| **Build** | `project_id` | `path`, `definition_id` | `{project_id = "...", definition_id = "123"}` |
-| **CSS** (Areas) | `project_id` | `path` | `{project_id = "...", path = "Area1/Area2"}` |
-| **Iteration** | `project_id` | `path` | `{project_id = "...", path = "Sprint 1"}` |
-| **Tagging** | None | `project_id` | `{project_id = "..."}` |
-| **Service Hooks** | None | `project_id` | `{project_id = "..."}` |
-| **Work Item Query Folders** | `project_id` | `path` | `{project_id = "...", path = "Shared Queries/My Queries"}` |
-| **Analytics** | `project_id` | None | `{project_id = "..."}` |
-| **AnalyticsViews** | `project_id` | None | `{project_id = "..."}` |
-| **Collection** | None | None | `{}` |
-| **Process** | None | `workitem_template_id`, `process_id` | `{workitem_template_id = "..."}` |
-| **AuditLog** | None | None | `{}` |
-| **BuildAdministration** | None | None | `{}` |
-| **Server** | None | None | `{}` |
-| **VersionControlPrivileges** | None | None | `{}` |
+| Namespace | Required Identifiers | Optional Identifiers | Example                                                                     |
+|-----------|---------------------|---------------------|-----------------------------------------------------------------------------|
+| **Git Repositories** | `project_id` | `repository_id`, `ref_name` | `{project_id = "...", repository_id = "..."}`                               |
+| **Project** | `project_id` | None | `{project_id = "..."}`                                                      |
+| **Build** | `project_id` | `path`, `definition_id` | `{project_id = "...", definition_id = "123"}`                               |
+| **CSS** (Areas) | `project_id` | `path` | `{project_id = "...", path = "Area1/Area2"}`                                |
+| **Iteration** | `project_id` | `path` | `{project_id = "...", path = "Sprint 1"}`                                   |
+| **Tagging** | None | `project_id` | `{project_id = "..."}`                                                      |
+| **Service Hooks** | None | `project_id` | `{project_id = "..."}`                                                      |
+| **Work Item Query Folders** | `project_id` | `path` | `{project_id = "...", path = "Shared Queries/My Queries"}`                  |
+| **Analytics** | `project_id` | None | `{project_id = "..."}`                                                      |
+| **AnalyticsViews** | `project_id` | None | `{project_id = "..."}`                                                      |
+| **Collection** | None | None | `{}`                                                                        |
+| **Process** | None | `workitem_template_id`, `process_id` | `{workitem_template_id = "..."}`                                            |
+| **AuditLog** | None | None | `{}`                                                                        |
+| **BuildAdministration** | None | None | `{}`                                                                        |
+| **Server** | None | None | `{}`                                                                        |
+| **VersionControlPrivileges** | None | None | `{}`                                                                        |
+| **ReleaseManagement2** | `project_id` | `path`, `definition_id` | `{project_id = "...", path = "MyFolder/mysubfolder", definition_id = "42"}` |
+
+~> **NOTE:** For the **Process** namespace, `process_id` can only be provided together with `workitem_template_id`.
+
+~> **NOTE:** For the **Build** namespace, when `definition_id` is provided, the definition's folder path is automatically resolved from the Azure DevOps API. When only `path` is provided, it represents the build folder path (e.g., `MyFolder/MySubFolder`).
+
+~> **NOTE:** For the **ReleaseManagement2** namespace, when `definition_id` is provided, the definition's folder path is automatically resolved from the Azure DevOps API. When only `path` is provided, it represents the release folder path (e.g., `myFolder`).
 
 ## Attributes Reference
 
