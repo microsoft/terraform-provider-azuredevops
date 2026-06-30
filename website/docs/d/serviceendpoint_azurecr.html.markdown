@@ -64,6 +64,21 @@ In addition to the Arguments list above - the following Attributes are exported:
 
 * `service_principal_id` - The Application(Client) ID of the Service Principal.
 
+* `service_endpoint_project_references` - A list of `service_endpoint_project_references` blocks as defined below.
+
+---
+
+### A `service_endpoint_project_references` block exports the following:
+
+* `project_reference` - A list of `project_reference` blocks as defined below.
+* `name` - The name of the service endpoint.
+* `description` - The description of the service endpoint.
+
+### A `project_reference` block exports the following:
+
+* `id` - The ID of the project.
+* `name` - The name of the project.
+
 ## Timeouts
 
 The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
