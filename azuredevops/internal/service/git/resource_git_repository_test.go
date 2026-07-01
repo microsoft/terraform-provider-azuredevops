@@ -171,6 +171,47 @@ func TestGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 	require.Contains(t, err.Error(), "GetRepository() Failed")
 }
 
+func TestGitRepo_UpdateAutoComplete_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repoID := uuid.New()
+	projectID := uuid.New()
+	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, map[string]interface{}{
+		"project_id":        projectID.String(),
+		"name":              "RepoName",
+		"set_auto_complete": true,
+	})
+	resourceData.SetId(repoID.String())
+	configureCleanInitialization(resourceData)
+
+	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
+	clients := &client.AggregatedClient{GitReposClient: reposClient, Ctx: context.Background()}
+
+	// 1. GetRepository for initial check in Update
+	reposClient.
+		EXPECT().
+		GetRepository(clients.Ctx, gomock.Any()).
+		Return(&git.GitRepository{
+			Id:         &repoID,
+			Name:       converter.String("RepoName"),
+			IsDisabled: converter.Bool(false),
+			Project:    &core.TeamProjectReference{Id: &projectID},
+		}, nil).
+		Times(2) // Once in Update, once in Read (at the end)
+
+	// 2. UpdateRepository for the main update
+	reposClient.
+		EXPECT().
+		UpdateRepository(clients.Ctx, gomock.Any()).
+		Return(&git.GitRepository{Id: &repoID}, nil).
+		Times(2) // Once for general update, once for auto-complete update
+
+	err := resourceGitRepositoryUpdate(resourceData, clients)
+	require.Nil(t, err)
+	require.True(t, resourceData.Get("set_auto_complete").(bool))
+}
+
 // verifies that 'Clean' repo initalization uses default branch name
 func TestGitRepo_Initialize_UsesTheDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
