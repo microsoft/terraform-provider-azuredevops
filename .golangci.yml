@@ -29,7 +29,7 @@ linters:
     # - prealloc # finds slice declarations that could potentially be pre-allocated.
     - predeclared # find code that shadows one of Go's predeclared identifiers.
     - reassign # checks that package variables are not reassigned.
-    - tenv #detects using os.Setenv instead of t.Setenv since Go1.17.
+    - usetesting #detects using os.Setenv instead of t.Setenv since Go1.17.
     - staticcheck # checks rules from staticcheck. It's not the same thing as the staticcheck binary.
     - unused # checks Go code for unused constants, variables, functions and types.
     - unconvert # checks for unnecessary type conversions.
