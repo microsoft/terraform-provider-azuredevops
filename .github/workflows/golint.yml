@@ -16,7 +16,9 @@ jobs:
       with:
         go-version-file: 'go.mod'
 
-    - uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6.5.2
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v9
       with:
-        version: 'v1.64.8'
-        args: -v ./azuredevops/...
+        version: v2.12
+
+
