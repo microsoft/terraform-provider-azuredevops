@@ -95,9 +95,13 @@ linters:
     staticcheck:
       checks:
         - "all"
+        - "-ST1000"
+        - "-ST1003"
         - "-ST1005"  # error strings should not be capitalized
         - "-ST1011"  # don't use unit-specific suffix
         - "-ST1017"  # don't use Yoda conditions
+        - "-ST1020"
+        - "-ST1021"
         - "-QF1001"  # could apply De Morgan's law
         - "-QF1003"  # could use tagged switch
         - "-QF1007"  # could merge conditional assignment
