@@ -68,6 +68,12 @@ linters:
     ###### DISABLED because no easy way to format tags
     #- tagalign #  checks struct tags that do not align with the specified column in struct definitions.
 
+  exclusions:
+    # Restore v1 default exclusions (errcheck for Close/Remove/Flush, govet printf, etc.)
+    presets:
+      - common-false-positives
+      - std-error-handling
+
   settings:
     errcheck:
       check-blank: true
@@ -77,12 +83,24 @@ linters:
         - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceDiff).SetNewComputed
         - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
         - io.Close
+    gocritic:
+      disabled-checks:
+        - unlambda
     misspell:
       ignore-rules:
         - hdinsight
         - exportfs
     nakedret:
       max-func-lines: 30
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST1005"  # error strings should not be capitalized
+        - "-ST1011"  # don't use unit-specific suffix
+        - "-ST1017"  # don't use Yoda conditions
+        - "-QF1001"  # could apply De Morgan's law
+        - "-QF1003"  # could use tagged switch
+        - "-QF1007"  # could merge conditional assignment
     tagalign:
       sort: true
       order:
