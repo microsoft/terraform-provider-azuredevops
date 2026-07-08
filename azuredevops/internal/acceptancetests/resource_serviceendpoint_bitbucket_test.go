@@ -59,6 +59,34 @@ func TestAccServiceEndpointBitBucket_complete(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointBitBucket_token(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	description := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_bitbucket"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclSvcEndpointBitBucketResourceToken(projectName, serviceEndpointName, description),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "email"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "api_token"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "email", "email@example.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
@@ -156,6 +184,20 @@ resource "azuredevops_serviceendpoint_bitbucket" "test" {
   description           = "%s"
   username              = "username"
   password              = "password"
+}`, serviceEndpointName, description)
+
+	projectResource := testutils.HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+func hclSvcEndpointBitBucketResourceToken(projectName string, serviceEndpointName string, description string) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_bitbucket" "test" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  description           = "%s"
+  email                 = "email@example.com"
+  api_token             = "api_token"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
