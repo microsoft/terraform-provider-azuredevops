@@ -24,6 +24,8 @@ func TestAccServiceEndpointBitBucket_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "email", "email@example.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "api_token", "api_token"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 				),
 			},
@@ -48,37 +50,8 @@ func TestAccServiceEndpointBitBucket_complete(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServiceEndpointBitBucket_token(t *testing.T) {
-	projectName := testutils.GenerateResourceName()
-	serviceEndpointName := testutils.GenerateResourceName()
-	description := testutils.GenerateResourceName()
-
-	resourceType := "azuredevops_serviceendpoint_bitbucket"
-	tfSvcEpNode := resourceType + ".test"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testutils.PreCheck(t, nil) },
-		Providers:    testutils.GetProviders(),
-		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
-		Steps: []resource.TestStep{
-			{
-				Config: hclSvcEndpointBitBucketResourceToken(projectName, serviceEndpointName, description),
-				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "email"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "api_token"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "email", "email@example.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "api_token", "api_token"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -104,7 +77,8 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 			{
 				Config: hclSvcEndpointBitBucketResourceBasic(projectName, serviceEndpointNameFirst),
 				Check: resource.ComposeTestCheckFunc(
-					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst), resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
 				),
 			},
@@ -113,9 +87,8 @@ func TestAccServiceEndpointBitBucket_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameSecond),
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "password"),
-					resource.TestCheckResourceAttrSet(tfSvcEpNode, "username"),
-					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "email", "email@example.com"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "api_token", "api_token"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameSecond),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
 				),
@@ -149,13 +122,40 @@ func TestAccServiceEndpointBitBucket_RequiresImportErrorStep(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointBitBucket_usernamePassword(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	description := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_serviceendpoint_bitbucket"
+	tfSvcEpNode := resourceType + ".test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclSvcEndpointBitBucketResourceUsernamePassword(projectName, serviceEndpointName, description),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "username", "username"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "password", "password"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "description", description),
+				),
+			},
+		},
+	})
+}
+
 func hclSvcEndpointBitBucketResourceBasic(projectName string, serviceEndpointName string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_bitbucket" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
-  username              = "username"
-  password              = "password"
+  email                 = "email@example.com"
+  api_token             = "api_token"
 }`, serviceEndpointName)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -168,8 +168,8 @@ resource "azuredevops_serviceendpoint_bitbucket" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
-  username              = "username"
-  password              = "password"
+  email                 = "email@example.com"
+  api_token             = "api_token"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -182,22 +182,22 @@ resource "azuredevops_serviceendpoint_bitbucket" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
-  username              = "username"
-  password              = "password"
+  email                 = "email@example.com"
+  api_token             = "api_token"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
 	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
 }
 
-func hclSvcEndpointBitBucketResourceToken(projectName string, serviceEndpointName string, description string) string {
+func hclSvcEndpointBitBucketResourceUsernamePassword(projectName string, serviceEndpointName string, description string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_bitbucket" "test" {
   project_id            = azuredevops_project.project.id
   service_endpoint_name = "%s"
   description           = "%s"
-  email                 = "email@example.com"
-  api_token             = "api_token"
+  username              = "username"
+  password              = "password"
 }`, serviceEndpointName, description)
 
 	projectResource := testutils.HclProjectResource(projectName)
@@ -212,8 +212,8 @@ resource "azuredevops_serviceendpoint_bitbucket" "import" {
   project_id            = azuredevops_serviceendpoint_bitbucket.test.project_id
   service_endpoint_name = azuredevops_serviceendpoint_bitbucket.test.service_endpoint_name
   description           = azuredevops_serviceendpoint_bitbucket.test.description
-  username              = azuredevops_serviceendpoint_bitbucket.test.username
-  password              = "password"
+  email                 = azuredevops_serviceendpoint_bitbucket.test.email
+  api_token             = "api_token"
 }
 `, template)
 }

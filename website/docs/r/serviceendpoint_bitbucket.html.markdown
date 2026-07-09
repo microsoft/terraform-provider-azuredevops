@@ -47,9 +47,9 @@ The following arguments are supported:
 
 * `password` - (Optional) Bitbucket account password. Used together with `username` to authenticate using an app password. **Deprecated**: Bitbucket Cloud has deprecated app password (username and password) authentication. Use `email` and `api_token` instead.
 
-* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
-
 ~> **NOTE:** Exactly one authentication method must be configured. Provide either `email` + `api_token` (recommended) or `username` + `password` (deprecated).
+
+* `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 
 ## Attributes Reference
 

@@ -37,6 +37,7 @@ func ResourceServiceEndpointBitBucket() *schema.Resource {
 			DefaultFunc:  schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", nil),
 			Description:  "The bitbucket username which should be used.",
 			RequiredWith: []string{"password"},
+			ExactlyOneOf: []string{"username", "email"},
 			Deprecated:   "Bitbucket Cloud has deprecated app password (username and password) authentication. Use `email` and `api_token` instead.",
 		},
 
