@@ -169,6 +169,11 @@ func ResourceGitRepository() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"disable_on_destroy": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"is_fork": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -426,7 +431,17 @@ func resourceGitRepositoryDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if *repoActual.IsDisabled {
+		if d.Get("disable_on_destroy").(bool) {
+			return nil
+		}
 		return fmt.Errorf("A disabled repository cannot be deleted, please enable the repository before attempting to delete : %s", repoID)
+	}
+
+	if d.Get("disable_on_destroy").(bool) {
+		if _, err = updateIsDisabledGitRepository(clients, repoID, projectID, true); err != nil {
+			return fmt.Errorf("disabling repository on destroy with ID %s. Error: %+v", repoID, err)
+		}
+		return nil
 	}
 
 	repoUUId, err := uuid.Parse(repoID)

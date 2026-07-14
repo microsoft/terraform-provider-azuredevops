@@ -241,6 +241,8 @@ The following arguments are supported:
 
 * `disabled` - (Optional) The ability to disable or enable the repository. Defaults to `false`.
 
+* `disable_on_destroy` - (Optional) If `true`, the repository will be disabled instead of deleted when the resource is destroyed. Defaults to `false`.
+
 ---
 
 A `initialization` - block supports the following:
