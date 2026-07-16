@@ -3,6 +3,7 @@ package approvalsandchecks
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -154,7 +155,9 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 			Expand:  converter.ToPtr(pipelineschecksextras.CheckConfigurationExpandParameterValues.Settings),
 		})
 		if err != nil {
-			if utils.ResponseWasNotFound(err) || strings.Contains(err.Error(), "does not exist.") {
+			if utils.ResponseWasNotFound(err) || strings.Contains(err.Error(), "does not exist.") ||
+				(utils.ResponseWasStatusCode(err, http.StatusForbidden) &&
+					utils.ResponseContainsStatusMessage(err, "does not have required permissions to view assignment on the resource")) {
 				d.SetId("")
 				return nil
 			}

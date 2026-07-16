@@ -3,10 +3,14 @@ package acceptancetests
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/acceptancetests/testutils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 )
 
 func TestAccCheckApproval_basic(t *testing.T) {
@@ -104,6 +108,65 @@ func TestAccCheckApproval_update(t *testing.T) {
 	})
 }
 
+func TestAccCheckApproval_targetResourceDeletedOutOfBand(t *testing.T) {
+	if os.Getenv("AZDO_TEST_AAD_USER_EMAIL") == "" {
+		t.Skip("Skip test due to `AZDO_TEST_AAD_USER_EMAIL` not set")
+	}
+
+	projectName := testutils.GenerateResourceName()
+
+	resourceType := "azuredevops_check_approval"
+	tfCheckNode := resourceType + ".test"
+	tfEnvNode := "azuredevops_environment.environment"
+	principalName := os.Getenv("AZDO_TEST_AAD_USER_EMAIL")
+
+	var projectID, environmentID string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, &[]string{"AZDO_TEST_AAD_USER_EMAIL"}) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckPipelineCheckDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: hclCheckApprovalResourceEnvironment(projectName, principalName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
+					resource.TestCheckResourceAttr(tfCheckNode, "target_resource_type", "environment"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources[tfEnvNode]
+						if !ok {
+							return fmt.Errorf("environment %q not found in state", tfEnvNode)
+						}
+						environmentID = rs.Primary.ID
+						projectID = rs.Primary.Attributes["project_id"]
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() {
+					clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+					envID, err := strconv.Atoi(environmentID)
+					if err != nil {
+						t.Fatalf("parsing environment ID %q: %v", environmentID, err)
+					}
+					if err := clients.TaskAgentClient.DeleteEnvironment(clients.Ctx, taskagent.DeleteEnvironmentArgs{
+						Project:       &projectID,
+						EnvironmentId: &envID,
+					}); err != nil {
+						t.Fatalf("deleting environment %d out of band: %v", envID, err)
+					}
+				},
+				Config: hclCheckApprovalResourceEnvironment(projectName, principalName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(tfCheckNode, "project_id"),
+					resource.TestCheckResourceAttr(tfCheckNode, "target_resource_type", "environment"),
+				),
+			},
+		},
+	})
+}
+
 func hclCheckApprovalResourceBasic(projectName string, principalName string) string {
 	checkResource := fmt.Sprintf(`
 data "azuredevops_users" "test" {
@@ -153,4 +216,26 @@ resource "azuredevops_check_approval" "test" {
 
 	genericcheckResource := testutils.HclServiceEndpointGenericResource(projectName, "serviceendpoint", "https://test/", "test", "test")
 	return fmt.Sprintf("%s\n%s", genericcheckResource, checkResource)
+}
+
+func hclCheckApprovalResourceEnvironment(projectName string, principalName string) string {
+	checkResource := fmt.Sprintf(`
+data "azuredevops_users" "test" {
+  principal_name = "%s"
+}
+
+resource "azuredevops_check_approval" "test" {
+  project_id           = azuredevops_project.project.id
+  target_resource_id   = azuredevops_environment.environment.id
+  target_resource_type = "environment"
+
+  requester_can_approve = false
+  approvers = [
+    one(data.azuredevops_users.test.users).id,
+  ]
+}
+`, principalName)
+
+	environmentResource := testutils.HclEnvironmentResource(projectName, "environment_test")
+	return fmt.Sprintf("%s\n%s", environmentResource, checkResource)
 }
