@@ -26,6 +26,36 @@ resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
 }
 ```
 
+### With custom states
+
+Declaring one or more `state` blocks opts into full state management for the
+work item type: states not listed here will be deleted. Mutually exclusive with `azuredevops_workitemtrackingprocess_state`. Only valid for work item types with no parent, i.e. `parent_work_item_reference_name` is not set. Use `azuredevops_workitemtrackingprocess_inherited_state` for work item types with a parent.
+
+```hcl
+resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
+  process_id = azuredevops_workitemtrackingprocess_process.example.id
+  name       = "example"
+
+  state {
+    name           = "New"
+    color          = "#3544ca"
+    state_category = "Proposed"
+  }
+
+  state {
+    name           = "Active"
+    color          = "#ff9d00"
+    state_category = "InProgress"
+  }
+
+  state {
+    name           = "Closed"
+    color          = "#339933"
+    state_category = "Completed"
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -46,6 +76,18 @@ The following arguments are supported:
 
 * `is_enabled` - (Optional) True if the work item type is enabled. Default: true
 
+* `state` - (Optional) One or more `state` blocks as defined below. See the [example](#with-custom-states) for caveats. Leaves custom states as-is if not defined.
+
+---
+
+A `state` block supports the following:
+
+* `name` - (Required) Name of the state.
+
+* `color` - (Required) Color hexadecimal code to represent the state, e.g. `#b2b2b2`.
+
+* `state_category` - (Required) Category of the state. Valid values: `Proposed`, `InProgress`, `Resolved`, `Completed`, `Removed`.
+
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
@@ -57,6 +99,16 @@ In addition to the Arguments listed above - the following Attributes are exporte
 * `reference_name` -  Reference name of the work item type.
 
 * `url` -  Url of the work item type.
+
+---
+
+Each `state` block additionally exports:
+
+* `id` - ID of the state.
+
+* `order` - Order assigned. Read-only — defined by the order of the `state` blocks.
+
+* `url` - URL of the state.
 
 ---
 
