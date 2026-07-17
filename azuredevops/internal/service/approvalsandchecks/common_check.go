@@ -3,6 +3,7 @@ package approvalsandchecks
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -158,6 +160,17 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 				d.SetId("")
 				return nil
 			}
+			if utils.ResponseWasStatusCode(err, http.StatusForbidden) &&
+				utils.ResponseContainsStatusMessage(err, "does not have required permissions to view assignment on the resource") {
+				deleted, verifyErr := checkTargetResourceDeleted(clients, projectID, d)
+				if verifyErr != nil {
+					return verifyErr
+				}
+				if deleted {
+					d.SetId("")
+					return nil
+				}
+			}
 			return err
 		}
 
@@ -253,4 +266,29 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.Check
 	d.Set("version", check.Version)
 
 	return nil
+}
+
+func checkTargetResourceDeleted(clients *client.AggregatedClient, projectID string, d *schema.ResourceData) (bool, error) {
+	switch d.Get("target_resource_type").(string) {
+	case "environment":
+		targetID := d.Get("target_resource_id").(string)
+		environmentID, err := strconv.Atoi(targetID)
+		if err != nil {
+			return false, fmt.Errorf("parsing environment target_resource_id %q: %+v", targetID, err)
+		}
+
+		_, err = clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
+			EnvironmentId: &environmentID,
+			Project:       &projectID,
+		})
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				return true, nil
+			}
+			return false, err
+		}
+		return false, nil
+	default:
+		return false, nil
+	}
 }
