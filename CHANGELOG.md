@@ -1,3 +1,34 @@
+## 1.16.0
+
+ENHANCEMENTS
+
+- New resource: `azuredevops_area` (#1568)
+- New data source: `azuredevops_serviceendpoint_type` (#1543)
+- New data source: `azuredevops_serviceendpoint_types` (#1543)
+- `azuredevops_serviceendpoint_bitbucket` - Support email + api token authentication (#1578)
+- `azuredevops_build_definition` - Trim `refs/heads/` prefix for `branch_name` (#1571)
+- `azuredevops_team` - Add new `area` attribute to manage team area paths (#1566)
+- `azuredevops_service_principal` (Data Source) - Add search by `origin_id` support (#1561)
+- `azuredevops_securityrole_assignment` - Add import support (#1564)
+- Add import support for all check resources (#1558)
+- Add handling for `AZURE_TENANT_ID` and `AZURE_CLIENT_SECRET` environment variables (#1536)
+
+BUG FIXES
+
+- `azuredevops_check_approval` - Fix failed refresh when target `azuredevops_environment` is deleted outside of Terraform (#1583)
+- `azuredevops_group_membership` - Fix 60 minute loop when `mode = "overwrite"` (#1570)
+- `azuredevops_users` - Migrate to `ReadContext` to enforce read timeout (#1565)
+- `azuredevops_securityrole_assignment` - Fix timeout issue when API returns `count:0` (#1564)
+- `azuredevops_serviceendpoint` resources - Fix drift for user with reader permissions (#1559)
+- `azuredevops_serviceendpoint_azurecr` - Mark `azurecr_subscription_(id|name)` as force-new (#1552)
+- Fix some inherited control types cannot be inferred (#1554)
+- Retry on `TF401349` unexpected error for controls, rules and groups (#1553)
+
+DEPENDENCIES
+
+- Bump golang.org/x/crypto from 0.53.0 to 0.54.0 (#1579)
+- Bump golang.org/x/net from 0.48.0 to 0.56.0 (#1576)
+
 ## 1.15.1
 
 BUG FIXES
