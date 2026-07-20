@@ -83,7 +83,6 @@ func TestInheritedState_Create(t *testing.T) {
 			assert.Contains(t, diags[0].Summary, tt.expectedError)
 		})
 	}
-
 }
 
 func TestInheritedState_Import(t *testing.T) {

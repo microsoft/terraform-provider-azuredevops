@@ -152,7 +152,7 @@ resource "azuredevops_security_permissions" "main_branch_perms" {
   token        = data.azuredevops_security_namespace_token.main_branch.token
   principal    = data.azuredevops_group.example_contributors.descriptor
   permissions = {
-    "ForcePush"     = "Deny"
+    "ForcePush"         = "Deny"
     "RemoveOthersLocks" = "Deny"
   }
   replace = false
