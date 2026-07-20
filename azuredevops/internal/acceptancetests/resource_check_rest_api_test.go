@@ -28,6 +28,12 @@ func TestAccCheckRestAPI_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "method", "GET"),
 				),
 			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -60,6 +66,12 @@ func TestAccCheckRestAPI_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfCheckNode, "variable_group_name", variableGroupName),
 					resource.TestCheckResourceAttr(tfCheckNode, "timeout", "40000"),
 				),
+			},
+			{
+				ResourceName:      tfCheckNode,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfCheckNode),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

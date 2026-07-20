@@ -344,10 +344,11 @@ func TestServiceEndpointAzureRM_CreateWithValidate_DoesNotSwallowError(t *testin
 		returnedServiceEndpoint.IsReady = converter.Bool(true)
 		buildClient.
 			EXPECT().
-			GetServiceEndpointDetails(clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
-				Project:    converter.String(azurermRandomServiceEndpointAzureRMProjectID.String()),
-				EndpointId: resource.Id,
-			},
+			GetServiceEndpointDetails(
+				clients.Ctx, serviceendpoint.GetServiceEndpointDetailsArgs{
+					Project:    converter.String(azurermRandomServiceEndpointAzureRMProjectID.String()),
+					EndpointId: resource.Id,
+				},
 			).
 			Return(&returnedServiceEndpoint, nil).
 			Times(1)

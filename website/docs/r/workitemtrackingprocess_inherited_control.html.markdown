@@ -60,6 +60,8 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the control.
 
+* `control_type` - Type of control.
+
 ## Relevant Links
 
 - [Azure DevOps Service REST API 7.1 - Controls](https://learn.microsoft.com/en-us/rest/api/azure/devops/processes/controls?view=azure-devops-rest-7.1)

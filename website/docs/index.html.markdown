@@ -76,12 +76,12 @@ the `ARM_CLIENT_ID` or `AZURE_CLIENT_ID` environment variable.
 - `client_id_file_path` - The path to a file containing a client id to authenticate. It can also be sourced from the `ARM_CLIENT_ID_FILE_PATH` environment variable.
 
 - `tenant_id` - The tenant id used when authenticating to a service principal.
-It can also be sourced from the `ARM_TENANT_ID` environment variable.
+It can also be sourced from the `ARM_TENANT_ID` or `AZURE_TENANT_ID` environment variable.
 
 - `auxiliary_tenant_ids` - List of auxiliary Tenant IDs required for multi-tenancy and cross-tenant scenarios. This can also be sourced from the `ARM_AUXILIARY_TENANT_IDS` environment variable.
 
 - `client_secret` - The client secret used to authenticate to a service principal.
-It can also be sourced from the `ARM_CLIENT_SECRET` environment variable.
+It can also be sourced from the `ARM_CLIENT_SECRET` or `AZURE_CLIENT_SECRET` environment variable.
 
 - `client_secret_path` - The path to a file containing a client secret to authenticate to a service principal.
 It can also be sourced from the `ARM_CLIENT_SECRET_PATH` or `ARM_CLIENT_SECRET_FILE_PATH` environment variable.

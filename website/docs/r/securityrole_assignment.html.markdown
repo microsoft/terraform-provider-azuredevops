@@ -48,13 +48,15 @@ The following arguments are supported:
 
 * `resource_id` - (Required) The ID of the resource on which the role is to be assigned. Changing this forces a new resource to be created.
 
-* `identity_id` - (Required) The ID of the identity to authorize.
+* `identity_id` - (Required) The internal identity ID (storage key) of the identity to authorize.
 
 * `role_name` - (Required) Name of the role to assign.
 
 ## Attributes Reference
 
-No attributes are exported
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the Security Role Assignment, in the format `scope/resource_id/identity_id`.
 
 ## Timeouts
 
@@ -64,6 +66,14 @@ The `timeouts` block allows you to specify [timeouts](https://developer.hashicor
 * `read` - (Defaults to 5 minute) Used when retrieving the Security Role Assignment.
 * `update` - (Defaults to 10 minutes) Used when updating the Security Role Assignment.
 * `delete` - (Defaults to 10 minutes) Used when deleting the Security Role Assignment.
+
+## Import
+
+Azure DevOps Security Role Assignments can be imported using the composite ID `scope/resource_id/identity_id`, e.g.
+
+```sh
+terraform import azuredevops_securityrole_assignment.example distributedtask.environmentreferencerole/projectId_environmentId/00000000-0000-0000-0000-000000000000
+```
 
 ## Relevant Links
 

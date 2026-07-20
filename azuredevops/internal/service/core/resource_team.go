@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/dashboard"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/graph"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/identity"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/work"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	securityhelper "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
@@ -33,6 +35,22 @@ func ResourceTeam() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		Importer: tfhelper.ImportProjectQualifiedResourceUUID(),
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+			if v, ok := d.GetOk("area"); ok {
+				areaSet := v.(*schema.Set)
+				defaultCount := 0
+				for _, item := range areaSet.List() {
+					area := item.(map[string]interface{})
+					if area["is_default"].(bool) {
+						defaultCount++
+					}
+				}
+				if defaultCount == 0 || defaultCount > 1 {
+					return fmt.Errorf("must have exactly one `area` block with `is_default` set to `true`")
+				}
+			}
+			return nil
+		},
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:         schema.TypeString,
@@ -76,6 +94,30 @@ func ResourceTeam() *schema.Resource {
 			"descriptor": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"area": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"path": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+						},
+						"include_children": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"is_default": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -131,7 +173,21 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if err = waitForTeamStateChange(d, clients, projectID, teamID, teamData.Name, teamData.Description, memberSet, administratorSet); err != nil {
+	var areaSet *schema.Set
+	if v, ok := d.GetOk("area"); ok {
+		areaSet = v.(*schema.Set)
+		if err := setTeamAreas(clients, projectID, teamID, areaSet); err != nil {
+			if delErr := clients.CoreClient.DeleteTeam(clients.Ctx, core.DeleteTeamArgs{
+				ProjectId: converter.String(team.ProjectId.String()),
+				TeamId:    converter.String(team.Id.String()),
+			}); delErr != nil {
+				log.Printf("[ERROR] Failed to delete team after area path update failure %+v", delErr)
+			}
+			return err
+		}
+	}
+
+	if err = waitForTeamStateChange(d, clients, projectID, teamID, teamData.Name, teamData.Description, memberSet, administratorSet, areaSet); err != nil {
 		return err
 	}
 
@@ -172,6 +228,33 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	areas, err := clients.WorkClient.GetTeamFieldValues(clients.Ctx, work.GetTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+	})
+	if err != nil {
+		return err
+	}
+
+	var areaList []map[string]interface{}
+	if areas != nil && areas.Values != nil {
+		for _, v := range *areas.Values {
+			if v.Value == nil {
+				continue
+			}
+			includeChildren := false
+			if v.IncludeChildren != nil {
+				includeChildren = *v.IncludeChildren
+			}
+			areaList = append(areaList, map[string]interface{}{
+				"path":             *v.Value,
+				"include_children": includeChildren,
+				"is_default":       areas.DefaultValue != nil && *v.Value == *areas.DefaultValue,
+			})
+		}
+	}
+	d.Set("area", areaList)
 
 	d.Set("name", team.Name)
 	d.Set("description", team.Description)
@@ -259,7 +342,15 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if err := waitForTeamStateChange(d, clients, projectID, teamID, newTeamName, newDescription, memberSet, administratorSet); err != nil {
+	var areaSet *schema.Set
+	if d.HasChange("area") && d.Get("area").(*schema.Set).Len() != 0 {
+		areaSet = d.Get("area").(*schema.Set)
+		if err := setTeamAreas(clients, projectID, teamID, areaSet); err != nil {
+			return err
+		}
+	}
+
+	if err := waitForTeamStateChange(d, clients, projectID, teamID, newTeamName, newDescription, memberSet, administratorSet, areaSet); err != nil {
 		return err
 	}
 
@@ -284,7 +375,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamID string, name *string, description *string, memberSet *schema.Set, administratorSet *schema.Set) error {
+func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamID string, name *string, description *string, memberSet *schema.Set, administratorSet *schema.Set, areaSet *schema.Set) error {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
@@ -333,7 +424,19 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				bMembersUpdated = actualMemberships.Len() == memberSet.Len()
 			}
 
-			if bNameUpdated && bDescriptionUpdated && bAdministratorsUpdated && bMembersUpdated && dashboardUpdate {
+			bAreasUpdated := true
+			if areaSet != nil {
+				currentAreaValues, err := clients.WorkClient.GetTeamFieldValues(clients.Ctx, work.GetTeamFieldValuesArgs{
+					Project: &projectID,
+					Team:    &teamID,
+				})
+				if err != nil {
+					return nil, "", fmt.Errorf("Reading team area paths for team %s: %+v", teamID, err)
+				}
+				bAreasUpdated = currentAreaValues.Values != nil && len(*currentAreaValues.Values) == areaSet.Len()
+			}
+
+			if bNameUpdated && bDescriptionUpdated && bAdministratorsUpdated && bMembersUpdated && dashboardUpdate && bAreasUpdated {
 				state = "Synched"
 			}
 			return state, state, nil
@@ -389,6 +492,37 @@ func setTeamMembers(clients *client.AggregatedClient, team *core.WebApiTeam, sub
 	err = addTeamMembers(clients, team, linq.From(*subjectDescriptors).Except(linq.From(currentMembers)), false)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func setTeamAreas(clients *client.AggregatedClient, projectID string, teamID string, areaSet *schema.Set) error {
+	var areaValues []work.TeamFieldValue
+	var defaultValue *string
+	for _, item := range areaSet.List() {
+		area := item.(map[string]interface{})
+		path := converter.String(area["path"].(string))
+		areaValues = append(areaValues, work.TeamFieldValue{
+			Value:           path,
+			IncludeChildren: converter.Bool(area["include_children"].(bool)),
+		})
+		if area["is_default"].(bool) {
+			defaultValue = path
+		}
+	}
+
+	areaPatch := &work.TeamFieldValuesPatch{
+		DefaultValue: defaultValue,
+		Values:       &areaValues,
+	}
+
+	if _, err := clients.WorkClient.UpdateTeamFieldValues(clients.Ctx, work.UpdateTeamFieldValuesArgs{
+		Project: &projectID,
+		Team:    &teamID,
+		Patch:   areaPatch,
+	}); err != nil {
+		return fmt.Errorf("updating team area paths for team %s: %w", teamID, err)
 	}
 
 	return nil

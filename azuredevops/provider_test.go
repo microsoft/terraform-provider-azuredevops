@@ -12,6 +12,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
+		"azuredevops_area",
 		"azuredevops_area_permissions",
 		"azuredevops_branch_policy_auto_reviewers",
 		"azuredevops_branch_policy_build_validation",
@@ -185,6 +186,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_serviceendpoint_dockerregistry",
 		"azuredevops_serviceendpoint_github",
 		"azuredevops_serviceendpoint_npm",
+		"azuredevops_serviceendpoint_type",
+		"azuredevops_serviceendpoint_types",
 		"azuredevops_serviceendpoint_sonarcloud",
 		"azuredevops_storage_key",
 		"azuredevops_service_principal",
