@@ -9,6 +9,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/model"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -31,18 +32,41 @@ func ResourceServiceEndpointBitBucket() *schema.Resource {
 
 	maps.Copy(r.Schema, map[string]*schema.Schema{
 		"username": {
-			Type:        schema.TypeString,
-			Required:    true,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", nil),
-			Description: "The bitbucket username which should be used.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", nil),
+			Description:  "The bitbucket username which should be used.",
+			RequiredWith: []string{"password"},
+			ExactlyOneOf: []string{"username", "email"},
+			Deprecated:   "Bitbucket Cloud has deprecated app password (username and password) authentication. Use `email` and `api_token` instead.",
 		},
 
 		"password": {
-			Type:        schema.TypeString,
-			Required:    true,
-			DefaultFunc: schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", nil),
-			Description: "The bitbucket password which should be used.",
-			Sensitive:   true,
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", nil),
+			Description:  "The bitbucket password which should be used.",
+			Sensitive:    true,
+			RequiredWith: []string{"username"},
+			Deprecated:   "Bitbucket Cloud has deprecated app password (username and password) authentication. Use `email` and `api_token` instead.",
+		},
+
+		"email": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_EMAIL", nil),
+			Description:  "The bitbucket account email which should be used.",
+			RequiredWith: []string{"api_token"},
+			ExactlyOneOf: []string{"username", "email"},
+		},
+
+		"api_token": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("AZDO_BITBUCKET_SERVICE_CONNECTION_API_TOKEN", nil),
+			Description:  "The bitbucket API token which should be used.",
+			Sensitive:    true,
+			RequiredWith: []string{"email"},
 		},
 	})
 
@@ -69,11 +93,15 @@ func resourceServiceEndpointBitbucketRead(d *schema.ResourceData, m interface{})
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
-		return nil
-	}
 	if err != nil {
-		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
+		return fmt.Errorf("unexpected nil service endpoint, ID: (%v), project ID: (%v)", getArgs.EndpointId, getArgs.Project)
 	}
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
@@ -101,12 +129,22 @@ func resourceServiceEndpointBitbucketDelete(d *schema.ResourceData, m interface{
 
 func expandServiceEndpointBitBucket(d *schema.ResourceData) *serviceendpoint.ServiceEndpoint {
 	serviceEndpoint := doBaseExpansion(d)
-	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
-		Parameters: &map[string]string{
-			"username": d.Get("username").(string),
-			"password": d.Get("password").(string),
-		},
-		Scheme: converter.String("UsernamePassword"),
+	if apiToken, ok := d.GetOk("api_token"); ok {
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"email":    d.Get("email").(string),
+				"apitoken": apiToken.(string),
+			},
+			Scheme: converter.String("Token"),
+		}
+	} else {
+		serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
+			Parameters: &map[string]string{
+				"username": d.Get("username").(string),
+				"password": d.Get("password").(string),
+			},
+			Scheme: converter.String("UsernamePassword"),
+		}
 	}
 	serviceEndpoint.Type = converter.String(string(model.RepoTypeValues.Bitbucket))
 	serviceEndpoint.Url = converter.String("https://api.bitbucket.org/")
@@ -115,5 +153,14 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) *serviceendpoint.Ser
 
 func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint) {
 	doBaseFlattening(d, serviceEndpoint)
-	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	if serviceEndpoint.Authorization == nil || serviceEndpoint.Authorization.Scheme == nil || serviceEndpoint.Authorization.Parameters == nil {
+		return
+	}
+	params := *serviceEndpoint.Authorization.Parameters
+	switch *serviceEndpoint.Authorization.Scheme {
+	case "Token":
+		d.Set("email", params["email"])
+	case "UsernamePassword":
+		d.Set("username", params["username"])
+	}
 }

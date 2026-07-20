@@ -1,13 +1,18 @@
 package approvalsandchecks
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/taskagent"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
@@ -63,6 +68,26 @@ func genBaseCheckResource(f flatFunc, e expandFunc) *schema.Resource {
 		Read:   genCheckReadFunc(f),
 		Update: genCheckUpdateFunc(f, e),
 		Delete: genCheckDeleteFunc(),
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+				idParts := strings.Split(d.Id(), "/")
+				if len(idParts) != 2 {
+					return nil, fmt.Errorf("unexpected ID format (%q), expected: <projectId>/<checkId>", d.Id())
+				}
+
+				if _, err := uuid.Parse(idParts[0]); err != nil {
+					return nil, fmt.Errorf("project ID must be a UUID, got: %s", idParts[0])
+				}
+
+				if _, err := strconv.Atoi(idParts[1]); err != nil {
+					return nil, fmt.Errorf("check ID must be an integer, got: %s", idParts[1])
+				}
+
+				d.Set("project_id", idParts[0])
+				d.SetId(idParts[1])
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(2 * time.Minute),
 			Read:   schema.DefaultTimeout(1 * time.Minute),
@@ -134,6 +159,17 @@ func genCheckReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, m interfac
 			if utils.ResponseWasNotFound(err) || strings.Contains(err.Error(), "does not exist.") {
 				d.SetId("")
 				return nil
+			}
+			if utils.ResponseWasStatusCode(err, http.StatusForbidden) &&
+				utils.ResponseContainsStatusMessage(err, "does not have required permissions to view assignment on the resource") {
+				deleted, verifyErr := checkTargetResourceDeleted(clients, projectID, d)
+				if verifyErr != nil {
+					return verifyErr
+				}
+				if deleted {
+					d.SetId("")
+					return nil
+				}
 			}
 			return err
 		}
@@ -230,4 +266,29 @@ func doBaseFlattening(d *schema.ResourceData, check *pipelineschecksextras.Check
 	d.Set("version", check.Version)
 
 	return nil
+}
+
+func checkTargetResourceDeleted(clients *client.AggregatedClient, projectID string, d *schema.ResourceData) (bool, error) {
+	switch d.Get("target_resource_type").(string) {
+	case "environment":
+		targetID := d.Get("target_resource_id").(string)
+		environmentID, err := strconv.Atoi(targetID)
+		if err != nil {
+			return false, fmt.Errorf("parsing environment target_resource_id %q: %+v", targetID, err)
+		}
+
+		_, err = clients.TaskAgentClient.GetEnvironmentById(clients.Ctx, taskagent.GetEnvironmentByIdArgs{
+			EnvironmentId: &environmentID,
+			Project:       &projectID,
+		})
+		if err != nil {
+			if utils.ResponseWasNotFound(err) {
+				return true, nil
+			}
+			return false, err
+		}
+		return false, nil
+	default:
+		return false, nil
+	}
 }

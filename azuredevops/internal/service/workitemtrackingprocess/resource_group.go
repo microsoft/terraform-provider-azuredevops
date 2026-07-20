@@ -263,11 +263,11 @@ func createResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	var createdGroup *workitemtrackingprocess.Group
-	err := utils.RetryOnContributionNotFound(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+	err := utils.RetryOn(ctx, d.Timeout(schema.TimeoutCreate), func() error {
 		var createErr error
 		createdGroup, createErr = clients.WorkItemTrackingProcessClient.AddGroup(ctx, args)
 		return createErr
-	})
+	}, utils.RetryOnContributionNotFound, utils.RetryOnUnexpectedException)
 	if err != nil {
 		return diag.Errorf(" Creating group. Error %+v", err)
 	}
@@ -446,7 +446,10 @@ func updateResourceGroup(ctx context.Context, d *schema.ResourceData, m any) dia
 		Group:      updateGroup,
 	}
 
-	_, err := clients.WorkItemTrackingProcessClient.UpdateGroup(ctx, args)
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutUpdate), func() error {
+		_, err := clients.WorkItemTrackingProcessClient.UpdateGroup(ctx, args)
+		return err
+	})
 	if err != nil {
 		return diag.Errorf(" Update group. Error %+v", err)
 	}

@@ -55,7 +55,8 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint)
+		&externalTfsTestServiceEndpoint,
+	)
 
 	serviceEndpointAfterRoundTrip := expandServiceEndpointExternalTFS(resourceData)
 
@@ -73,7 +74,8 @@ func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint)
+		&externalTfsTestServiceEndpoint,
+	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -98,7 +100,8 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint)
+		&externalTfsTestServiceEndpoint,
+	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -126,7 +129,8 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData.Set("project_id", (*externalTfsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint)
+		&externalTfsTestServiceEndpoint,
+	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -158,7 +162,8 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint)
+		&externalTfsTestServiceEndpoint,
+	)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

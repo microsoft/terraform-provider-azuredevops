@@ -93,7 +93,7 @@ The following arguments are supported:
   GitHubDirectory          = "ghb"  # GitHub
   ```
   </pre>
-  
+
 
 * `origin_id` - (Optional) The unique identifier from the system of origin.
 
@@ -141,4 +141,4 @@ A `users` block supports the following:
 
 The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
 
-* `read` - (Defaults to 30 minute) Used when retrieving the Users.
+* `read` - (Defaults to 5 minutes) Used when retrieving the Users.

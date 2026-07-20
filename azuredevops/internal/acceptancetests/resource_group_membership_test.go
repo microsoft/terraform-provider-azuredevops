@@ -34,6 +34,12 @@ func TestAccGroupMembership_overwrite(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "members.#", "0"),
 				),
 			},
+			{
+				Config: overwriteExistingMembers(projectName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "members.#", "1"),
+				),
+			},
 		},
 	})
 }
@@ -75,6 +81,31 @@ resource "azuredevops_group" "member" {
 
 resource "azuredevops_group_membership" "test" {
   group   = azuredevops_group.test.id
+  mode    = "overwrite"
+  members = [azuredevops_group.member.id]
+}
+`, name)
+}
+
+func overwriteExistingMembers(name string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "acctest-%[1]s"
+}
+
+resource "azuredevops_group" "member" {
+  display_name = "acctest-member-%[1]s"
+  scope        = azuredevops_project.test.id
+}
+
+resource "azuredevops_group" "seeded" {
+  display_name = "acctest-seeded-%[1]s"
+  scope        = azuredevops_project.test.id
+  members      = [azuredevops_group.member.id]
+}
+
+resource "azuredevops_group_membership" "test" {
+  group   = azuredevops_group.seeded.id
   mode    = "overwrite"
   members = [azuredevops_group.member.id]
 }

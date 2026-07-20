@@ -44,6 +44,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                                  taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                                 taskagent.ResourceAgentQueue(),
+			"azuredevops_area":                                        workitemtracking.ResourceArea(),
 			"azuredevops_area_permissions":                            permissions.ResourceAreaPermissions(),
 			"azuredevops_branch_policy_auto_reviewers":                branch.ResourceBranchPolicyAutoReviewers(),
 			"azuredevops_branch_policy_build_validation":              branch.ResourceBranchPolicyBuildValidation(),
@@ -201,6 +202,8 @@ func Provider() *schema.Provider {
 			"azuredevops_security_namespaces":                   security.DataSecurityNamespaces(),
 			"azuredevops_securityrole_definitions":              securityroles.DataSecurityRoleDefinitions(),
 			"azuredevops_serviceendpoint_generic_v2":            serviceendpoint.DataServiceEndpointGenericV2(),
+			"azuredevops_serviceendpoint_type":                  serviceendpoint.DataServiceEndpointType(),
+			"azuredevops_serviceendpoint_types":                 serviceendpoint.DataServiceEndpointTypes(),
 			"azuredevops_serviceendpoint_azurecr":               serviceendpoint.DataResourceServiceEndpointAzureCR(),
 			"azuredevops_serviceendpoint_azurerm":               serviceendpoint.DataServiceEndpointAzureRM(),
 			"azuredevops_serviceendpoint_bitbucket":             serviceendpoint.DataResourceServiceEndpointBitbucket(),
@@ -250,7 +253,7 @@ func Provider() *schema.Provider {
 			"tenant_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"ARM_TENANT_ID", "AZURE_TENANT_ID"}, nil),
 				Description:  "The service principal tenant id which should be used for AAD auth.",
 				ValidateFunc: validation.IsUUID,
 			},
@@ -288,7 +291,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"ARM_CLIENT_SECRET", "AZURE_CLIENT_SECRET"}, nil),
 				Description: "Client secret for authenticating to  a service principal.",
 			},
 			"client_secret_path": {
