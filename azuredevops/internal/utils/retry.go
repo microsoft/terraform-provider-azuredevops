@@ -49,3 +49,17 @@ func RetryOnContributionNotFound(ctx context.Context, timeout time.Duration, f f
 		return ResponseContainsStatusMessage(err, "VS403120")
 	})
 }
+
+type RetryFunc func(ctx context.Context, timeout time.Duration, f func() error) error
+
+// RetryOn can retry the given function using multiple retry functions.
+// The retry functions are chained to each other in reverse order,
+// i.e. the outer most is executed first
+func RetryOn(ctx context.Context, timeout time.Duration, f func() error, retries ...RetryFunc) error {
+	inner := f
+	for i := len(retries) - 1; i >= 0; i-- {
+		r, prev := retries[i], inner
+		inner = func() error { return r(ctx, timeout, prev) }
+	}
+	return inner()
+}

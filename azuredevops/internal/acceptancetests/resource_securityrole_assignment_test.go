@@ -27,6 +27,30 @@ func TestAccSecurityRoleAssignmentResource_basic(t *testing.T) {
 	})
 }
 
+func TestAccSecurityRoleAssignmentResource_import(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	groupName := testutils.GenerateResourceName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclSecurityRoleAssignmentBasic(projectName, groupName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("azuredevops_securityrole_assignment.test", "scope"),
+					resource.TestCheckResourceAttr("azuredevops_securityrole_assignment.test", "role_name", "Administrator"),
+				),
+			},
+			{
+				ResourceName:      "azuredevops_securityrole_assignment.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccSecurityRoleAssignmentResource_update(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	groupName := testutils.GenerateResourceName()

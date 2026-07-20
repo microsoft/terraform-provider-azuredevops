@@ -73,6 +73,8 @@ func flattenCheckApproval(d *schema.ResourceData, check *pipelineschecksextras.C
 
 	if requesterCannotBeApprover, found := settings["requesterCannotBeApprover"]; found {
 		d.Set("requester_can_approve", !requesterCannotBeApprover.(bool))
+	} else {
+		d.Set("requester_can_approve", true)
 	}
 
 	if approversRaw, found := settings["approvers"]; found {

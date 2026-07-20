@@ -22,8 +22,8 @@ resource "azuredevops_project" "example" {
 
 resource "azuredevops_serviceendpoint_bitbucket" "example" {
   project_id            = azuredevops_project.example.id
-  username              = "username"
-  password              = "password"
+  email                 = "email@example.com"
+  api_token             = "api_token"
   service_endpoint_name = "Example Bitbucket"
   description           = "Managed by Terraform"
 }
@@ -37,11 +37,17 @@ The following arguments are supported:
 
 * `service_endpoint_name` - (Required) The Service Endpoint name.
 
-* `username` - (Required) Bitbucket account username.
-
-* `password` - (Required) Bitbucket account password.
-
 ---
+
+* `email` - (Optional) Bitbucket account email. Used together with `api_token` to authenticate using an Atlassian API token.
+
+* `api_token` - (Optional) Bitbucket account API token. Used together with `email` to authenticate using an Atlassian API token.
+
+* `username` - (Optional) Bitbucket account username. Used together with `password` to authenticate using an app password. **Deprecated**: Bitbucket Cloud has deprecated app password (username and password) authentication. Use `email` and `api_token` instead.
+
+* `password` - (Optional) Bitbucket account password. Used together with `username` to authenticate using an app password. **Deprecated**: Bitbucket Cloud has deprecated app password (username and password) authentication. Use `email` and `api_token` instead.
+
+~> **NOTE:** Exactly one authentication method must be configured. Provide either `email` + `api_token` (recommended) or `username` + `password` (deprecated).
 
 * `description` - (Optional) The Service Endpoint description. Defaults to `Managed by Terraform`.
 

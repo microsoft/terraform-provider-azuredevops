@@ -63,6 +63,11 @@ func ResourceInheritedControl() *schema.Resource {
 				Computed:    true,
 				Description: "Label for the control.",
 			},
+			"control_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of control.",
+			},
 			"visible": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -127,6 +132,9 @@ func createResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("control %s is not inherited, use azuredevops_workitemtrackingprocess_control to manage custom controls", controlId)
 	}
 
+	if existingControl.ControlType != nil {
+		d.Set("control_type", *existingControl.ControlType)
+	}
 	d.SetId(controlId)
 
 	return updateResourceInheritedControl(ctx, d, m)
@@ -175,6 +183,9 @@ func readResourceInheritedControl(ctx context.Context, d *schema.ResourceData, m
 	if control.Visible != nil {
 		d.Set("visible", *control.Visible)
 	}
+	if control.ControlType != nil {
+		d.Set("control_type", *control.ControlType)
+	}
 	return nil
 }
 
@@ -184,6 +195,10 @@ func updateResourceInheritedControl(ctx context.Context, d *schema.ResourceData,
 	controlId := d.Id()
 
 	control := workitemtrackingprocess.Control{}
+
+	if v, ok := d.GetOk("control_type"); ok {
+		control.ControlType = converter.String(v.(string))
+	}
 
 	visible, err := getBoolAttributeFromConfig(d, "visible")
 	if err != nil {

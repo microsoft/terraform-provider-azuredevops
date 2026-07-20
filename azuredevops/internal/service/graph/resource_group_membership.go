@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-set/v3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -61,8 +62,8 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 	group := d.Get("group").(string)
 	mode := d.Get("mode").(string)
-	membersToAdd := d.Get("members").(*schema.Set)
-	var membersToRemove *schema.Set = nil
+	membersToAdd := schemaSetToGoSet(d.Get("members").(*schema.Set))
+	var membersToRemove set.Collection[string] = nil
 
 	if strings.EqualFold("overwrite", mode) {
 		actualMemberships, err := getGroupMemberships(clients, group)
@@ -76,8 +77,8 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 	}
 
 	err := applyMembershipUpdate(m.(*client.AggregatedClient),
-		expandGroupMembers(group, membersToAdd),
-		expandGroupMembers(group, membersToRemove))
+		expandGroupMembersSet(group, membersToAdd),
+		expandGroupMembersSet(group, membersToRemove))
 	if err != nil {
 		return fmt.Errorf("Adding group memberships during create: %+v", err)
 	}
@@ -93,14 +94,14 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 				return nil, "", fmt.Errorf("Reading group memberships: %+v", err)
 			}
 			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if (membersToAdd == nil || actualMembershipsSet.Intersection(membersToAdd).Len() <= 0) &&
-				(membersToRemove == nil || actualMembershipsSet.Intersection(membersToRemove).Len() <= 0) {
+			if (membersToAdd == nil || actualMembershipsSet.Intersect(membersToAdd).Size() == membersToAdd.Size()) &&
+				(membersToRemove == nil || actualMembershipsSet.Intersect(membersToRemove).Size() == 0) {
 				state = "Synched"
 			}
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   d.Timeout(schema.TimeoutCreate),
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 2,
@@ -151,13 +152,13 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 	group := d.Get("group").(string)
 	oldData, newData := d.GetChange("members")
 	// members that need to be added will be missing from the old data, but present in the new data
-	membersToAdd := newData.(*schema.Set).Difference(oldData.(*schema.Set))
+	membersToAdd := schemaSetToGoSet(newData.(*schema.Set).Difference(oldData.(*schema.Set)))
 	// members that need to be removed will be missing from the new data, but present in the old data
-	membersToRemove := oldData.(*schema.Set).Difference(newData.(*schema.Set))
+	membersToRemove := schemaSetToGoSet(oldData.(*schema.Set).Difference(newData.(*schema.Set)))
 
 	err := applyMembershipUpdate(m.(*client.AggregatedClient),
-		expandGroupMembers(group, membersToAdd),
-		expandGroupMembers(group, membersToRemove))
+		expandGroupMembersSet(group, membersToAdd),
+		expandGroupMembersSet(group, membersToRemove))
 	if err != nil {
 		return err
 	}
@@ -171,15 +172,15 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 			if err != nil {
 				return nil, "", fmt.Errorf("Reading group memberships: %+v", err)
 			}
-			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if actualMembershipsSet.Intersection(membersToAdd).Len() <= 0 &&
-				actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+			actualSet := getGroupMembershipSet(actualMemberships)
+			if actualSet.Intersect(membersToAdd).Size() == membersToAdd.Size() &&
+				actualSet.Intersect(membersToRemove).Size() == 0 {
 				state = "Synched"
 			}
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   d.Timeout(schema.TimeoutUpdate),
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 3,
@@ -195,8 +196,8 @@ func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error 
 	clients := m.(*client.AggregatedClient)
 
 	group := d.Get("group").(string)
-	membersToRemove := d.Get("members").(*schema.Set)
-	memberships := expandGroupMembers(group, membersToRemove)
+	membersToRemove := schemaSetToGoSet(d.Get("members").(*schema.Set))
+	memberships := expandGroupMembersSet(group, membersToRemove)
 
 	err := removeMembers(clients, memberships)
 	stateConf := &retry.StateChangeConf{
@@ -209,13 +210,13 @@ func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error 
 				return nil, "", fmt.Errorf("Reading group memberships: %+v", err)
 			}
 			actualMembershipsSet := getGroupMembershipSet(actualMemberships)
-			if actualMembershipsSet.Intersection(membersToRemove).Len() <= 0 {
+			if actualMembershipsSet.Intersect(membersToRemove).Size() <= 0 {
 				state = "Synched"
 			}
 
 			return state, state, nil
 		},
-		Timeout:                   60 * time.Minute,
+		Timeout:                   d.Timeout(schema.TimeoutDelete),
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		ContinuousTargetOccurence: 2,
@@ -299,6 +300,23 @@ func expandGroupMembers(group string, memberSet *schema.Set) *[]graph.GraphMembe
 	return &memberships
 }
 
+func expandGroupMembersSet(group string, memberSet set.Collection[string]) *[]graph.GraphMembership {
+	if memberSet == nil || memberSet.Empty() {
+		return &[]graph.GraphMembership{}
+	}
+	members := memberSet.Slice()
+	memberships := make([]graph.GraphMembership, len(members))
+
+	for i, member := range members {
+		memberships[i] = graph.GraphMembership{
+			ContainerDescriptor: &group,
+			MemberDescriptor:    converter.String(member),
+		}
+	}
+
+	return &memberships
+}
+
 func getGroupMemberships(clients *client.AggregatedClient, groupDescriptor string) (*[]graph.GraphMembership, error) {
 	return clients.GraphClient.ListMemberships(clients.Ctx, graph.ListMembershipsArgs{
 		SubjectDescriptor: &groupDescriptor,
@@ -307,12 +325,16 @@ func getGroupMemberships(clients *client.AggregatedClient, groupDescriptor strin
 	})
 }
 
-func getGroupMembershipSet(members *[]graph.GraphMembership) *schema.Set {
-	set := schema.NewSet(schema.HashString, nil)
-	if nil != members {
+func getGroupMembershipSet(members *[]graph.GraphMembership) *set.Set[string] {
+	s := set.New[string](0)
+	if members != nil {
 		for _, member := range *members {
-			set.Add(*member.MemberDescriptor)
+			s.Insert(*member.MemberDescriptor)
 		}
 	}
-	return set
+	return s
+}
+
+func schemaSetToGoSet(s *schema.Set) *set.Set[string] {
+	return set.FromFunc(s.List(), func(v interface{}) string { return v.(string) })
 }

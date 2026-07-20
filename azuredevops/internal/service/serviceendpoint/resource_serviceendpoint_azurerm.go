@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint/migration"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
@@ -212,7 +213,8 @@ func resourceServiceEndpointAzureRMCreate(d *schema.ResourceData, m interface{})
 						(*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String(),
 					},
 					EndpointId: resp.Id,
-				}); delErr != nil {
+				},
+			); delErr != nil {
 				return fmt.Errorf("Delete service endpoint error %v", delErr)
 			}
 			return err
@@ -231,17 +233,17 @@ func resourceServiceEndpointAzureRMRead(d *schema.ResourceData, m interface{}) e
 	}
 
 	serviceEndpoint, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(clients.Ctx, *getArgs)
-	if isServiceEndpointDeleted(d, err, serviceEndpoint, getArgs) {
-		return nil
-	}
 	if err != nil {
-		return fmt.Errorf("looking up service endpoint given ID (%s) and project ID (%s): %v", getArgs.EndpointId, *getArgs.Project, err)
+		if utils.ResponseWasNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("looking up service endpoint given ID (%v) and project ID (%v): %v", getArgs.EndpointId, getArgs.Project, err)
+	}
+	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
+		return fmt.Errorf("unexpected nil service endpoint, ID: (%v), project ID: (%v)", getArgs.EndpointId, getArgs.Project)
 	}
 
-	if serviceEndpoint == nil || serviceEndpoint.Id == nil {
-		d.SetId("")
-		return nil
-	}
 	d.Set("features", d.Get("features"))
 
 	if err = checkServiceConnection(serviceEndpoint); err != nil {
