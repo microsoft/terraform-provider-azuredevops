@@ -157,6 +157,55 @@ func TestAccTeam_complete(t *testing.T) {
 	})
 }
 
+func TestAccTeam_area(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	teamName := testutils.GenerateResourceName()
+
+	tfNode := "azuredevops_team.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckProjectDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclTeamWithArea(projectName, teamName, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "name", teamName),
+					resource.TestCheckResourceAttr(tfNode, "area.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccTeam_areaUpdate(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	teamName := testutils.GenerateResourceName()
+
+	tfNode := "azuredevops_team.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckProjectDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclTeamWithArea(projectName, teamName, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "area.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "area.0.include_children", "true"),
+				),
+			},
+			{
+				Config: hclTeamWithArea(projectName, teamName, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(tfNode, "area.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "area.0.include_children", "false"),
+				),
+			},
+		},
+	})
+}
+
 func hclTeamBasic(projectName, teamName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -317,4 +366,28 @@ resource "azuredevops_team" "test" {
     data.azuredevops_group.test2.descriptor
   ]
 }`, projectName, teamName)
+}
+
+func hclTeamWithArea(projectName, teamName string, includeChildren bool) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_area" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "TestArea"
+}
+
+resource "azuredevops_team" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%s"
+
+  area {
+    path             = azuredevops_area.test.path
+    include_children = %t
+    is_default       = true
+  }
+}
+`, projectName, teamName, includeChildren)
 }

@@ -179,7 +179,12 @@ func resourceRuleCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		ProcessRuleCreate: ruleRequest,
 	}
 
-	createdRule, err := clients.WorkItemTrackingProcessClient.AddProcessWorkItemTypeRule(ctx, args)
+	var createdRule *workitemtrackingprocess.ProcessRule
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutCreate), func() error {
+		var createErr error
+		createdRule, createErr = clients.WorkItemTrackingProcessClient.AddProcessWorkItemTypeRule(ctx, args)
+		return createErr
+	})
 	if err != nil {
 		return diag.Errorf(" Creating rule. Error: %+v", err)
 	}
@@ -267,7 +272,10 @@ func resourceRuleUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		ProcessRule: ruleUpdate,
 	}
 
-	_, err := clients.WorkItemTrackingProcessClient.UpdateProcessWorkItemTypeRule(ctx, args)
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutUpdate), func() error {
+		_, err := clients.WorkItemTrackingProcessClient.UpdateProcessWorkItemTypeRule(ctx, args)
+		return err
+	})
 	if err != nil {
 		return diag.Errorf(" Updating rule %s. Error: %+v", ruleId, err)
 	}
@@ -288,7 +296,9 @@ func resourceRuleDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		RuleId:     converter.UUID(ruleId),
 	}
 
-	err := clients.WorkItemTrackingProcessClient.DeleteProcessWorkItemTypeRule(ctx, args)
+	err := utils.RetryOnUnexpectedException(ctx, d.Timeout(schema.TimeoutDelete), func() error {
+		return clients.WorkItemTrackingProcessClient.DeleteProcessWorkItemTypeRule(ctx, args)
+	})
 	if err != nil {
 		if utils.ResponseWasNotFound(err) {
 			return nil

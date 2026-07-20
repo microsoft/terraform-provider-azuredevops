@@ -1,6 +1,7 @@
 package securityroles
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/securityroles"
 )
 
@@ -20,6 +22,9 @@ func ResourceSecurityRoleAssignment() *schema.Resource {
 		Read:   resourceSecurityRoleAssignmentRead,
 		Update: resourceSecurityRoleAssignmentCreateOrUpdate,
 		Delete: resourceSecurityRoleAssignmentDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: importSecurityRoleAssignment,
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
@@ -42,6 +47,7 @@ func ResourceSecurityRoleAssignment() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.IsUUID,
 				Required:     true,
+				ForceNew:     true,
 			},
 			"role_name": {
 				Type:         schema.TypeString,
@@ -56,13 +62,13 @@ func resourceSecurityRoleAssignmentCreateOrUpdate(d *schema.ResourceData, m inte
 	clients := m.(*client.AggregatedClient)
 	scope := d.Get("scope").(string)
 	resourceId := d.Get("resource_id").(string)
+	roleName := d.Get("role_name").(string)
 
 	identityId, err := uuid.Parse(d.Get("identity_id").(string))
 	if err != nil {
-		return err
+		return fmt.Errorf("parsing identity_id: %+v", err)
 	}
 
-	roleName := d.Get("role_name").(string)
 	err = clients.SecurityRolesClient.SetSecurityRoleAssignment(clients.Ctx, &securityroles.SetSecurityRoleAssignmentArgs{
 		Scope:      &scope,
 		ResourceId: &resourceId,
@@ -87,7 +93,7 @@ func resourceSecurityRoleAssignmentCreateOrUpdate(d *schema.ResourceData, m inte
 		return err
 	}
 
-	d.SetId("sra-" + uuid.New().String())
+	d.SetId(fmt.Sprintf("%s/%s/%s", scope, resourceId, identityId.String()))
 	return resourceSecurityRoleAssignmentRead(d, m)
 }
 
@@ -97,7 +103,7 @@ func resourceSecurityRoleAssignmentRead(d *schema.ResourceData, m interface{}) e
 	resourceId := d.Get("resource_id").(string)
 	identityId, err := uuid.Parse(d.Get("identity_id").(string))
 	if err != nil {
-		return err
+		return fmt.Errorf("parsing identity_id: %+v", err)
 	}
 
 	assignment, err := clients.SecurityRolesClient.GetSecurityRoleAssignment(clients.Ctx, &securityroles.GetSecurityRoleAssignmentArgs{
@@ -110,7 +116,7 @@ func resourceSecurityRoleAssignmentRead(d *schema.ResourceData, m interface{}) e
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("reading group memberships during read: %+v", err)
+		return fmt.Errorf("reading security role assignment: %+v", err)
 	}
 
 	if assignment != nil && (assignment.Identity == nil && assignment.Role == nil) {
@@ -137,7 +143,7 @@ func resourceSecurityRoleAssignmentDelete(d *schema.ResourceData, m interface{})
 
 	identityId, err := uuid.Parse(d.Get("identity_id").(string))
 	if err != nil {
-		return err
+		return fmt.Errorf("parsing identity_id: %+v", err)
 	}
 
 	err = clients.SecurityRolesClient.DeleteSecurityRoleAssignment(clients.Ctx, &securityroles.DeleteSecurityRoleAssignmentArgs{
@@ -181,4 +187,18 @@ func getSecurityRoleAssignment(clients client.AggregatedClient, scope, roleName,
 		}
 		return "", "succeed", nil
 	}
+}
+
+func importSecurityRoleAssignment(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	parts, err := tfhelper.ParseImportedNameParts(d.Id(), "scope/resource_id/identity_id", 3)
+	if err != nil {
+		return nil, err
+	}
+
+	d.Set("scope", parts[0])
+	d.Set("resource_id", parts[1])
+	d.Set("identity_id", parts[2])
+	d.SetId(d.Id())
+
+	return []*schema.ResourceData{d}, nil
 }

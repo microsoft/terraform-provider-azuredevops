@@ -12,6 +12,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -52,7 +54,11 @@ func (client *ClientImpl) ListSecurityRoleDefinitions(ctx context.Context, args 
 
 	queryParams := url.Values{}
 
-	locationId, _ := uuid.Parse("f4cc9a86-453c-48d2-b44d-d3bd5c105f4f")
+	locationId, err := uuid.Parse("f4cc9a86-453c-48d2-b44d-d3bd5c105f4f")
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "7.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -83,7 +89,11 @@ func (client *ClientImpl) ListSecurityRoleAssignments(ctx context.Context, args 
 
 	queryParams := url.Values{}
 
-	locationId, _ := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
+	locationId, err := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := client.Client.Send(ctx, http.MethodGet, locationId, "7.1-preview.1", routeValues, queryParams, nil, "", "application/json", nil)
 	if err != nil {
 		return nil, err
@@ -155,10 +165,26 @@ func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *S
 		return marshalErr
 	}
 
-	locationId, _ := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
-	_, err := client.Client.Send(ctx, http.MethodPut, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
+	locationId, err := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
 	if err != nil {
 		return err
+	}
+
+	resp, err := client.Client.Send(ctx, http.MethodPut, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
+	if err != nil {
+		return err
+	}
+
+	if resp != nil && resp.Body != nil {
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+		if readErr == nil {
+			var result struct {
+				Count int `json:"count"`
+			}
+			if json.Unmarshal(bodyBytes, &result) == nil && result.Count == 0 {
+				return fmt.Errorf("the identity was not recognized by Azure DevOps. Ensure you are using the internal identity ID (storage key).")
+			}
+		}
 	}
 
 	return nil
@@ -189,8 +215,12 @@ func (client *ClientImpl) DeleteSecurityRoleAssignment(ctx context.Context, args
 		return marshalErr
 	}
 
-	locationId, _ := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
-	_, err := client.Client.Send(ctx, http.MethodPatch, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
+	locationId, err := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Client.Send(ctx, http.MethodPatch, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
 	if err != nil {
 		return err
 	}

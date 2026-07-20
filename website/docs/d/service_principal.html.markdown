@@ -11,9 +11,23 @@ Use this data source to access information about an existing Service Principal.
 
 ## Example Usage
 
+### By Display Name
+
 ```hcl
 data "azuredevops_service_principal" "example" {
   display_name = "existing"
+}
+
+output "id" {
+  value = data.azuredevops_service_principal.example.id
+}
+```
+
+### By Origin ID
+
+```hcl
+data "azuredevops_service_principal" "example" {
+  origin_id = "00000000-0000-0000-0000-000000000000"
 }
 
 output "id" {
@@ -25,7 +39,11 @@ output "id" {
 
 The following arguments are supported:
 
-* `display_name` - (Required) The Display Name of the Service Principal. Changing this forces a new Service Principal to be created.
+* `display_name` - (Optional) The Display Name of the Service Principal. Changing this forces a new Service Principal to be created.
+
+* `origin_id` - (Optional) The origin ID of the Service Principal.
+
+~> **NOTE:** Exactly one of `display_name` or `origin_id` must be specified.
 
 ## Attributes Reference
 
@@ -36,8 +54,6 @@ In addition to the Arguments listed above - the following Attributes are exporte
 * `descriptor` - The descriptor of the Service Principal.
 
 * `origin` - The origin of the Service Principal.
-
-* `origin_id` - The origin ID of the Service Principal..
 
 ## Timeouts
 

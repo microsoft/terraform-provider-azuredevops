@@ -24,14 +24,18 @@ func DataServicePrincipal() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"display_name": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
+				Computed:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: suppress.CaseDifference,
 				ValidateFunc:     validation.StringIsNotWhiteSpace,
+				ExactlyOneOf:     []string{"display_name", "origin_id"},
 			},
 			"origin_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"display_name", "origin_id"},
 			},
 			"origin": {
 				Type:     schema.TypeString,
@@ -53,32 +57,42 @@ func dataSourceServicePrincipalRead(d *schema.ResourceData, m interface{}) error
 	clients := m.(*client.AggregatedClient)
 	searchFilter := converter.String("General")
 	displayName := d.Get("display_name").(string)
+	origin_id := d.Get("origin_id").(string)
+	var servicePrincipal *graph.GraphServicePrincipal
+	var err error
 
-	// Query ADO for list of identity user with filter
-	filteredServicePrincipals, err := getIdentityServicePrincipalsWithFilterValue(clients, searchFilter, displayName)
-	if err != nil || filteredServicePrincipals == nil || len(*filteredServicePrincipals) == 0 {
-		return fmt.Errorf("Finding service principal with filter %s. Error: %v", *searchFilter, err)
-	}
-
-	flattenedServicePrincipals, err := flattenIdentityServicePrincipals(filteredServicePrincipals)
-	if err != nil {
-		return fmt.Errorf("Flatten service principals. Error: %v", err)
-	}
-
-	// Filter for the desired user in the FilterUsers results
-	targetServicePrincipal := validateIdentityServicePrincipal(flattenedServicePrincipals, displayName)
-	if targetServicePrincipal == nil {
-		return fmt.Errorf("Could not find service principal with name: %s", displayName)
-	}
-
-	servicePrincipalDescriptor := targetServicePrincipal.SubjectDescriptor
-
-	servicePrincipal, err := getServicePrincipal(clients, servicePrincipalDescriptor)
-	if err != nil {
-		if servicePrincipalDescriptor != nil {
-			return fmt.Errorf("Finding service principal with Descriptor %s", *servicePrincipalDescriptor)
+	if origin_id != "" {
+		servicePrincipal, err = getServicePrincipalByOriginId(clients, origin_id)
+		if err != nil {
+			return fmt.Errorf("Finding service principal with origin_id %s. Error: %v", origin_id, err)
 		}
-		return fmt.Errorf("Finding service principal. Error: %v", err)
+	} else {
+		// Query ADO for list of identity user with filter
+		filteredServicePrincipals, err := getIdentityServicePrincipalsWithFilterValue(clients, searchFilter, displayName)
+		if err != nil || filteredServicePrincipals == nil || len(*filteredServicePrincipals) == 0 {
+			return fmt.Errorf("Finding service principal with filter %s. Error: %v", *searchFilter, err)
+		}
+
+		flattenedServicePrincipals, err := flattenIdentityServicePrincipals(filteredServicePrincipals)
+		if err != nil {
+			return fmt.Errorf("Flatten service principals. Error: %v", err)
+		}
+
+		// Filter for the desired user in the FilterUsers results
+		targetServicePrincipal := validateIdentityServicePrincipal(flattenedServicePrincipals, displayName)
+		if targetServicePrincipal == nil {
+			return fmt.Errorf("Could not find service principal with name: %s", displayName)
+		}
+
+		servicePrincipalDescriptor := targetServicePrincipal.SubjectDescriptor
+
+		servicePrincipal, err = getServicePrincipal(clients, servicePrincipalDescriptor)
+		if err != nil {
+			if servicePrincipalDescriptor != nil {
+				return fmt.Errorf("Finding service principal with Descriptor %s", *servicePrincipalDescriptor)
+			}
+			return fmt.Errorf("Finding service principal. Error: %v", err)
+		}
 	}
 
 	d.SetId(*servicePrincipal.Descriptor)
@@ -136,4 +150,29 @@ func getServicePrincipal(clients *client.AggregatedClient, servicePrincipalDescr
 	return clients.GraphClient.GetServicePrincipal(clients.Ctx, graph.GetServicePrincipalArgs{
 		ServicePrincipalDescriptor: servicePrincipalDescriptor,
 	})
+}
+
+func getServicePrincipalByOriginId(clients *client.AggregatedClient, originId string) (*graph.GraphServicePrincipal, error) {
+	var continuationToken *string
+	for {
+		result, err := clients.GraphClient.ListServicePrincipals(clients.Ctx, graph.ListServicePrincipalsArgs{
+			ContinuationToken: continuationToken,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("listing service principals: %v", err)
+		}
+		if result.GraphServicePrincipals != nil {
+			for i, sp := range *result.GraphServicePrincipals {
+				if sp.OriginId != nil && *sp.OriginId == originId {
+					return &(*result.GraphServicePrincipals)[i], nil
+				}
+			}
+		}
+		if result.ContinuationToken == nil || len(*result.ContinuationToken) == 0 || (*result.ContinuationToken)[0] == "" {
+			break
+		}
+		token := (*result.ContinuationToken)[0]
+		continuationToken = &token
+	}
+	return nil, fmt.Errorf("could not find service principal with origin_id: %s", originId)
 }
