@@ -241,6 +241,8 @@ The following arguments are supported:
 
 * `disabled` - (Optional) The ability to disable or enable the repository. Defaults to `false`.
 
+* `set_auto_complete` - (Optional) The ability to enable or disable auto-complete on pull requests by default. Defaults to `false`.
+
 ---
 
 A `initialization` - block supports the following:
