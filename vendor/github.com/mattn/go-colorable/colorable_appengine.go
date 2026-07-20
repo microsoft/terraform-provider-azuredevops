@@ -1,5 +1,5 @@
-//go:build !windows && !appengine
-// +build !windows,!appengine
+//go:build appengine
+// +build appengine
 
 package colorable
 

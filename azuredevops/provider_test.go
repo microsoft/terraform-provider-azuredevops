@@ -12,7 +12,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 	expectedResources := []string{
 		"azuredevops_agent_pool",
 		"azuredevops_agent_queue",
-		"azuredevops_workitemtracking_area",
+		"azuredevops_area",
 		"azuredevops_area_permissions",
 		"azuredevops_branch_policy_auto_reviewers",
 		"azuredevops_branch_policy_build_validation",
@@ -158,7 +158,7 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_agent_pool",
 		"azuredevops_agent_pools",
 		"azuredevops_agent_queue",
-		"azuredevops_workitemtracking_area",
+		"azuredevops_area",
 		"azuredevops_build_definition",
 		"azuredevops_client_config",
 		"azuredevops_descriptor",

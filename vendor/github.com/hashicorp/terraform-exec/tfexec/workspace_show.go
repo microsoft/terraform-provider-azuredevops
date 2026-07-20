@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2020, 2026
+// Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
 package tfexec
@@ -10,23 +10,9 @@ import (
 	"strings"
 )
 
-type workspaceShowConfig struct {
-	reattachInfo ReattachInfo
-}
-
-var defaultWorkspaceShowOptions = workspaceShowConfig{}
-
-type WorkspaceShowOption interface {
-	configureWorkspaceShow(*workspaceShowConfig)
-}
-
-func (opt *ReattachOption) configureWorkspaceShow(conf *workspaceShowConfig) {
-	conf.reattachInfo = opt.info
-}
-
 // WorkspaceShow represents the workspace show subcommand to the Terraform CLI.
-func (tf *Terraform) WorkspaceShow(ctx context.Context, opts ...WorkspaceShowOption) (string, error) {
-	workspaceShowCmd, err := tf.workspaceShowCmd(ctx, opts...)
+func (tf *Terraform) WorkspaceShow(ctx context.Context) (string, error) {
+	workspaceShowCmd, err := tf.workspaceShowCmd(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -42,26 +28,11 @@ func (tf *Terraform) WorkspaceShow(ctx context.Context, opts ...WorkspaceShowOpt
 	return strings.TrimSpace(outBuffer.String()), nil
 }
 
-func (tf *Terraform) workspaceShowCmd(ctx context.Context, opts ...WorkspaceShowOption) (*exec.Cmd, error) {
+func (tf *Terraform) workspaceShowCmd(ctx context.Context) (*exec.Cmd, error) {
 	err := tf.compatible(ctx, tf0_10_0, nil)
 	if err != nil {
 		return nil, fmt.Errorf("workspace show was first introduced in Terraform 0.10.0: %w", err)
 	}
 
-	c := defaultWorkspaceShowOptions
-
-	for _, o := range opts {
-		o.configureWorkspaceShow(&c)
-	}
-
-	mergeEnv := map[string]string{}
-	if c.reattachInfo != nil {
-		reattachStr, err := c.reattachInfo.marshalString()
-		if err != nil {
-			return nil, err
-		}
-		mergeEnv[reattachEnvVar] = reattachStr
-	}
-
-	return tf.buildTerraformCmd(ctx, mergeEnv, "workspace", "show", "-no-color"), nil
+	return tf.buildTerraformCmd(ctx, nil, "workspace", "show", "-no-color"), nil
 }

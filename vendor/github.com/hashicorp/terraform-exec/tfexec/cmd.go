@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2020, 2026
+// Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
 package tfexec
@@ -11,8 +11,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"iter"
-	"maps"
 	"os"
 	"os/exec"
 	"runtime"
@@ -123,16 +123,6 @@ func envSlice(environ map[string]string) []string {
 	return env
 }
 
-// buildEnv determines which environment variables should affect use of a Terraform
-// executable.
-//
-// Factors that can affect the final set of environment variables are:
-// > Whether a user has explicitly set environment variables via (tf *Terraform) SetEnv.
-// > The environment of the machine terraform-exec is run on.
-// > Any override ENVs set in command-specific code (e.g. use of TF_REATTACH_PROVIDERS).
-//
-// This method also enforces some rules for the entire terraform-exec library,
-// for example User Agent data set via ENVs.
 func (tf *Terraform) buildEnv(mergeEnv map[string]string) []string {
 	// set Terraform level env, if env is nil, fall back to os.Environ
 	var env map[string]string
@@ -140,11 +130,15 @@ func (tf *Terraform) buildEnv(mergeEnv map[string]string) []string {
 		env = envMap(os.Environ())
 	} else {
 		env = make(map[string]string, len(tf.env))
-		maps.Copy(env, tf.env)
+		for k, v := range tf.env {
+			env[k] = v
+		}
 	}
 
 	// override env with any command specific environment
-	maps.Copy(env, mergeEnv)
+	for k, v := range mergeEnv {
+		env[k] = v
+	}
 
 	// always propagate CHECKPOINT_DISABLE env var unless it is
 	// explicitly overridden with tf.SetEnv or command env
@@ -318,7 +312,7 @@ func mergeWriters(writers ...io.Writer) io.Writer {
 		}
 	}
 	if len(compact) == 0 {
-		return io.Discard
+		return ioutil.Discard
 	}
 	if len(compact) == 1 {
 		return compact[0]

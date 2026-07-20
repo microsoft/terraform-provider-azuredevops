@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2020, 2026
+// Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
 package tfexec
@@ -11,10 +11,9 @@ import (
 )
 
 type workspaceDeleteConfig struct {
-	lock         bool
-	lockTimeout  string
-	force        bool
-	reattachInfo ReattachInfo
+	lock        bool
+	lockTimeout string
+	force       bool
 }
 
 var defaultWorkspaceDeleteOptions = workspaceDeleteConfig{
@@ -37,10 +36,6 @@ func (opt *LockTimeoutOption) configureWorkspaceDelete(conf *workspaceDeleteConf
 
 func (opt *ForceOption) configureWorkspaceDelete(conf *workspaceDeleteConfig) {
 	conf.force = opt.force
-}
-
-func (opt *ReattachOption) configureWorkspaceDelete(conf *workspaceDeleteConfig) {
-	conf.reattachInfo = opt.info
 }
 
 // WorkspaceDelete represents the workspace delete subcommand to the Terraform CLI.
@@ -83,16 +78,7 @@ func (tf *Terraform) workspaceDeleteCmd(ctx context.Context, workspace string, o
 
 	args = append(args, workspace)
 
-	mergeEnv := map[string]string{}
-	if c.reattachInfo != nil {
-		reattachStr, err := c.reattachInfo.marshalString()
-		if err != nil {
-			return nil, err
-		}
-		mergeEnv[reattachEnvVar] = reattachStr
-	}
-
-	cmd := tf.buildTerraformCmd(ctx, mergeEnv, args...)
+	cmd := tf.buildTerraformCmd(ctx, nil, args...)
 
 	return cmd, nil
 }
