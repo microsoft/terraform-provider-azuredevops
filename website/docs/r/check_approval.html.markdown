@@ -36,6 +36,7 @@ resource "azuredevops_check_approval" "example" {
   target_resource_id   = azuredevops_serviceendpoint_generic.example.id
   target_resource_type = "endpoint"
 
+  approval_kind         = "approval"
   requester_can_approve = false
   approvers = [
     one(data.azuredevops_users.example.users).id,
@@ -66,6 +67,7 @@ resource "azuredevops_check_approval" "example" {
   target_resource_id   = azuredevops_environment.example.id
   target_resource_type = "environment"
 
+  approval_kind         = "pre_check"
   requester_can_approve = true
   approvers = [
     azuredevops_group.example.origin_id,
@@ -86,6 +88,8 @@ The following arguments are supported:
 * `approvers` - (Required) Specifies a list of approver IDs.
 
 ---
+
+* `approval_kind` - (Optional) The kind of approval to create. Valid values are `approval`, `pre_check`, `post_check`. Defaults to `approval`.
 
 * `instructions` - (Optional) The instructions for the approvers.
 
