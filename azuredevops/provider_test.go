@@ -14,6 +14,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_agent_queue",
 		"azuredevops_area",
 		"azuredevops_area_permissions",
+		"azuredevops_area_tree",
 		"azuredevops_branch_policy_auto_reviewers",
 		"azuredevops_branch_policy_build_validation",
 		"azuredevops_branch_policy_comment_resolution",
