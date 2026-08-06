@@ -195,7 +195,7 @@ resource "azuredevops_release_definition" "test" {
     name = "Stage 1"
 
     deploy_phase {
-      name          = "Agent job"
+      name           = "Agent job"
       agent_queue_id = data.azuredevops_agent_queue.test.id
 
       task {
@@ -223,7 +223,7 @@ resource "azuredevops_release_definition" "test" {
     name = "Stage 1"
 
     deploy_phase {
-      name          = "Agent job"
+      name           = "Agent job"
       agent_queue_id = data.azuredevops_agent_queue.test.id
 
       task {
@@ -246,7 +246,7 @@ resource "azuredevops_release_definition" "test" {
     }
 
     deploy_phase {
-      name          = "Agent job"
+      name           = "Agent job"
       agent_queue_id = data.azuredevops_agent_queue.test.id
 
       task {
@@ -284,7 +284,7 @@ resource "azuredevops_release_definition" "test" {
     name = "Stage 1"
 
     deploy_phase {
-      name          = "Agent job"
+      name           = "Agent job"
       agent_queue_id = data.azuredevops_agent_queue.test.id
 
       task {
@@ -349,7 +349,7 @@ resource "azuredevops_release_definition" "test" {
     }
 
     deploy_phase {
-      name          = "Agent job"
+      name           = "Agent job"
       agent_queue_id = data.azuredevops_agent_queue.test.id
 
       task {
@@ -428,7 +428,7 @@ resource "azuredevops_release_definition" "test" {
     }
 
     deploy_phase {
-      name          = "Agent job"
+      name           = "Agent job"
       agent_queue_id = data.azuredevops_agent_queue.test.id
 
       task {
