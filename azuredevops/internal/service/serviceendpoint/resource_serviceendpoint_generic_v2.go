@@ -542,6 +542,11 @@ func resourceServiceEndpointGenericV2Read(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("error setting shared_project_ids: %w", err))
 	}
 
+	// Set validate_input to default value if not explicitly set in state
+	if err := d.Set("validate_input", false); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting validate_input: %w", err))
+	}
+
 	return nil
 }
 
