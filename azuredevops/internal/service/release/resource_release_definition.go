@@ -1309,8 +1309,13 @@ var scheduleDayBits = []struct {
 	bit  int
 	name string
 }{
-	{1, "monday"}, {2, "tuesday"}, {4, "wednesday"}, {8, "thursday"},
-	{16, "friday"}, {32, "saturday"}, {64, "sunday"},
+	{1, "monday"},
+	{2, "tuesday"},
+	{4, "wednesday"},
+	{8, "thursday"},
+	{16, "friday"},
+	{32, "saturday"},
+	{64, "sunday"},
 }
 
 func flattenScheduleDays(input interface{}) []interface{} {
