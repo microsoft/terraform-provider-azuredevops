@@ -2,6 +2,7 @@ package acceptancetests
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -89,8 +90,42 @@ func TestAccReleaseDefinition_variables(t *testing.T) {
 				Config: hclReleaseDefinitionVariables(name),
 				Check: resource.ComposeTestCheckFunc(
 					checkReleaseDefinitionExists(name),
-					resource.TestCheckResourceAttr(tfNode, "variable.#", "2"),
+					resource.TestCheckResourceAttr(tfNode, "variable.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "variable.0.name", "FOO_VAR"),
+					resource.TestCheckResourceAttr(tfNode, "variable.0.value", "foo"),
+					resource.TestCheckResourceAttr(tfNode, "secret_variable.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "secret_variable.0.name", "BAR_VAR"),
+					resource.TestCheckResourceAttr(tfNode, "secret_variable.0.value", "bar"),
+					resource.TestCheckResourceAttr(tfNode, "stage.0.variable.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "stage.0.variable.0.name", "STAGE_VAR"),
+					resource.TestCheckResourceAttr(tfNode, "stage.0.variable.0.value", "stage"),
+					resource.TestCheckResourceAttr(tfNode, "stage.0.secret_variable.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "stage.0.secret_variable.0.name", "STAGE_SECRET"),
+					resource.TestCheckResourceAttr(tfNode, "stage.0.secret_variable.0.value", "stagesecret"),
 				),
+			},
+			{
+				ResourceName:            tfNode,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportStateVerifyIgnore: []string{"secret_variable.0.value", "stage.0.secret_variable.0.value"},
+			},
+		},
+	})
+}
+
+func TestAccReleaseDefinition_duplicateVariableName(t *testing.T) {
+	name := testutils.GenerateResourceName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkReleaseDefinitionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config:      hclReleaseDefinitionDuplicateVariable(name),
+				ExpectError: regexp.MustCompile("`DUPE_VAR` is declared as both a `variable` and a `secret_variable`"),
 			},
 		},
 	})
@@ -114,6 +149,68 @@ func TestAccReleaseDefinition_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(tfNode, "stage.1.environment_trigger.0.trigger_type", "rollbackRedeploy"),
 					resource.TestCheckResourceAttr(tfNode, "stage.1.pre_deployment_gates.#", "1"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccReleaseDefinition_sourceRepoAndPullRequestTriggers(t *testing.T) {
+	name := testutils.GenerateResourceName()
+	tfNode := "azuredevops_release_definition.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkReleaseDefinitionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclReleaseDefinitionRepoTriggers(name),
+				Check: resource.ComposeTestCheckFunc(
+					checkReleaseDefinitionExists(name),
+					resource.TestCheckResourceAttr(tfNode, "source_repo_trigger.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "source_repo_trigger.0.artifact_alias", "sourceRepo"),
+					resource.TestCheckResourceAttr(tfNode, "source_repo_trigger.0.branch_filter.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "source_repo_trigger.0.branch_filter.0.include.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "pull_request_trigger.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "pull_request_trigger.0.artifact_alias", "sourceRepo"),
+					resource.TestCheckResourceAttr(tfNode, "pull_request_trigger.0.use_artifact_reference", "true"),
+					resource.TestCheckResourceAttr(tfNode, "pull_request_trigger.0.trigger_condition.0.target_branch", "refs/heads/master"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+			},
+		},
+	})
+}
+
+func TestAccReleaseDefinition_packageTrigger(t *testing.T) {
+	name := testutils.GenerateResourceName()
+	tfNode := "azuredevops_release_definition.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkReleaseDefinitionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclReleaseDefinitionPackageTrigger(name),
+				Check: resource.ComposeTestCheckFunc(
+					checkReleaseDefinitionExists(name),
+					resource.TestCheckResourceAttr(tfNode, "artifact.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "artifact.0.type", "PackageManagement"),
+					resource.TestCheckResourceAttr(tfNode, "package_trigger.#", "1"),
+					resource.TestCheckResourceAttr(tfNode, "package_trigger.0.artifact_alias", "mypackage"),
+				),
+			},
+			{
+				ResourceName:      tfNode,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testutils.ComputeProjectQualifiedResourceImportID(tfNode),
 			},
 		},
 	})
@@ -274,10 +371,56 @@ resource "azuredevops_release_definition" "test" {
     value = "foo"
   }
 
+  secret_variable {
+    name  = "BAR_VAR"
+    value = "bar"
+  }
+
+  stage {
+    name = "Stage 1"
+
+    variable {
+      name  = "STAGE_VAR"
+      value = "stage"
+    }
+
+    secret_variable {
+      name  = "STAGE_SECRET"
+      value = "stagesecret"
+    }
+
+    deploy_phase {
+      name           = "Agent job"
+      agent_queue_id = data.azuredevops_agent_queue.test.id
+
+      task {
+        task_id = "%[3]s"
+        version = "2.*"
+        inputs = {
+          script = "echo $(FOO_VAR)"
+        }
+      }
+    }
+  }
+}`, hclReleaseDefinitionProject(name), name, releaseCmdLineTaskID)
+}
+
+func hclReleaseDefinitionDuplicateVariable(name string) string {
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_release_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+
   variable {
-    name         = "BAR_VAR"
-    is_secret    = true
-    secret_value = "bar"
+    name  = "DUPE_VAR"
+    value = "plain"
+  }
+
+  secret_variable {
+    name  = "DUPE_VAR"
+    value = "secret"
   }
 
   stage {
@@ -291,7 +434,7 @@ resource "azuredevops_release_definition" "test" {
         task_id = "%[3]s"
         version = "2.*"
         inputs = {
-          script = "echo $(FOO_VAR)"
+          script = "echo hello"
         }
       }
     }
@@ -436,6 +579,143 @@ resource "azuredevops_release_definition" "test" {
         version = "2.*"
         inputs = {
           script = "echo Deploying $(app_name) to $(target_url)"
+        }
+      }
+    }
+  }
+}`, hclReleaseDefinitionProject(name), name, releaseCmdLineTaskID)
+}
+
+func hclReleaseDefinitionRepoTriggers(name string) string {
+	return fmt.Sprintf(`
+%[1]s
+
+resource "azuredevops_git_repository" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s-repo"
+  initialization {
+    init_type = "Clean"
+  }
+}
+
+resource "azuredevops_release_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+
+  artifact {
+    alias      = "sourceRepo"
+    type       = "Git"
+    is_primary = true
+
+    definition_reference {
+      key  = "project"
+      id   = azuredevops_project.test.id
+      name = azuredevops_project.test.name
+    }
+    definition_reference {
+      key  = "definition"
+      id   = azuredevops_git_repository.test.id
+      name = azuredevops_git_repository.test.name
+    }
+    definition_reference {
+      key  = "defaultVersionType"
+      id   = "latestFromBranchType"
+      name = "Latest from a specific branch"
+    }
+    definition_reference {
+      key  = "branches"
+      id   = "refs/heads/master"
+      name = "refs/heads/master"
+    }
+  }
+
+  source_repo_trigger {
+    artifact_alias = "sourceRepo"
+
+    branch_filter {
+      include = ["refs/heads/master"]
+    }
+  }
+
+  pull_request_trigger {
+    artifact_alias         = "sourceRepo"
+    use_artifact_reference = true
+
+    trigger_condition {
+      target_branch = "refs/heads/master"
+    }
+  }
+
+  stage {
+    name = "Stage 1"
+
+    deploy_phase {
+      name           = "Agent job"
+      agent_queue_id = data.azuredevops_agent_queue.test.id
+
+      task {
+        task_id = "%[3]s"
+        version = "2.*"
+        inputs = {
+          script = "echo hello"
+        }
+      }
+    }
+  }
+}`, hclReleaseDefinitionProject(name), name, releaseCmdLineTaskID)
+}
+
+func hclReleaseDefinitionPackageTrigger(name string) string {
+	return fmt.Sprintf(`
+%[1]s
+
+resource "azuredevops_feed" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s-feed"
+}
+
+resource "azuredevops_release_definition" "test" {
+  project_id = azuredevops_project.test.id
+  name       = "%[2]s"
+
+  artifact {
+    alias      = "mypackage"
+    type       = "PackageManagement"
+    is_primary = true
+
+    definition_reference {
+      key  = "feed"
+      id   = azuredevops_feed.test.id
+      name = azuredevops_feed.test.name
+    }
+    definition_reference {
+      key  = "definition"
+      id   = "%[2]s-package"
+      name = "%[2]s-package"
+    }
+    definition_reference {
+      key  = "defaultVersionType"
+      id   = "latestType"
+      name = "Latest"
+    }
+  }
+
+  package_trigger {
+    artifact_alias = "mypackage"
+  }
+
+  stage {
+    name = "Stage 1"
+
+    deploy_phase {
+      name           = "Agent job"
+      agent_queue_id = data.azuredevops_agent_queue.test.id
+
+      task {
+        task_id = "%[3]s"
+        version = "2.*"
+        inputs = {
+          script = "echo hello"
         }
       }
     }

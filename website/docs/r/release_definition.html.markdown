@@ -52,6 +52,11 @@ resource "azuredevops_release_definition" "example" {
     value = "production"
   }
 
+  secret_variable {
+    name  = "api_key"
+    value = var.api_key
+  }
+
   artifact {
     alias      = "myapp"
     type       = "Build"
@@ -121,37 +126,75 @@ The following arguments are supported:
 * `release_name_format` - (Optional) The release name format. Defaults to `Release-$(rev:r)`.
 * `variable_groups` - (Optional) A set of variable group IDs to link to the release definition.
 * `variable` - (Optional) One or more `variable` blocks as documented below.
+* `secret_variable` - (Optional) One or more `secret_variable` blocks as documented below.
 * `artifact` - (Optional) One or more `artifact` blocks as documented below.
 * `artifact_source_trigger` - (Optional) One or more `artifact_source_trigger` blocks as documented below. Creates a release automatically when a new version of the linked artifact is available (continuous deployment).
 * `schedule_trigger` - (Optional) One or more `schedule_trigger` blocks as documented below. Creates a release on a recurring schedule.
+* `source_repo_trigger` - (Optional) One or more `source_repo_trigger` blocks as documented below. Creates a release when a commit is pushed to a linked source repository artifact.
+* `container_image_trigger` - (Optional) One or more `container_image_trigger` blocks as documented below. Creates a release when a new container image is pushed to a linked container repository artifact.
+* `package_trigger` - (Optional) One or more `package_trigger` blocks as documented below. Creates a release when a new version of a linked package artifact is published.
+* `pull_request_trigger` - (Optional) One or more `pull_request_trigger` blocks as documented below. Creates a release when a pull request is raised against a linked source repository artifact.
 
-~> **NOTE:** Only `artifact_source_trigger` and `schedule_trigger` are managed by this resource. Other trigger types configured in the Azure DevOps UI (pull request, container image, package, and source repository triggers) are preserved on update but are not managed by Terraform.
+~> **NOTE:** Each trigger references an `artifact` by its `alias` via `artifact_alias`, and the referenced artifact must be of a compatible `type`. Trigger types not yet exposed by this resource are preserved on update rather than removed.
 
 * `stage` - (Required) One or more `stage` blocks as documented below.
 
 A `variable` block supports the following:
 
 * `name` - (Required) The name of the variable.
-* `value` - (Optional) The value of the variable. Cannot be used together with `is_secret` / `secret_value`.
-* `secret_value` - (Optional) The secret value of the variable. Used together with `is_secret = true`. This value is not returned by the API and is stored only in Terraform state.
-* `is_secret` - (Optional) Whether the variable is a secret. Defaults to `false`. When `true`, set `secret_value` instead of `value`.
+* `value` - (Optional) The value of the variable.
 * `allow_override` - (Optional) Whether the variable can be overridden at release time. Defaults to `false`.
+
+A `secret_variable` block supports the following:
+
+* `name` - (Required) The name of the secret variable.
+* `value` - (Optional) The value of the secret variable. This value is marked as sensitive.
+* `allow_override` - (Optional) Whether the variable can be overridden at release time. Defaults to `false`.
+
+~> **NOTE:** A name may not be used by both a `variable` and a `secret_variable` block in the same scope.
+
+~> **NOTE:** The service never returns the value of a secret variable, so it is tracked only in Terraform state. On import, `secret_variable` values are empty and the next plan will show a diff until the values are supplied in the configuration.
 
 An `artifact` block supports the following:
 
 * `alias` - (Required) The alias of the artifact. This is referenced by release variables and triggers (e.g. `$(myapp.BuildNumber)`).
-* `type` - (Required) The artifact type. Common values are `Build`, `Git`, `GitHub`, `TFVC`, `Jenkins`, and `Nuget`.
+* `type` - (Required) The artifact type. Common values are `Build`, `Git`, `GitHub`, `GitHubRelease`, `TFVC`, `Jenkins`, `PackageManagement` (Azure Artifacts feeds), and container registry types such as `DockerHub` and `AzureContainerRepository`. Azure DevOps extensions can register additional artifact types, so this value is not restricted to a fixed list. An unrecognised type is rejected by the service with `VS402864: No artifact type found corresponding to ID <type>`.
 * `is_primary` - (Optional) Whether this is the primary artifact. Defaults to `true`.
 * `is_retained` - (Optional) Whether the artifact is retained by the release. Defaults to `false`.
 * `definition_reference` - (Required) One or more `definition_reference` blocks describing the artifact source, as documented below.
 
 A `definition_reference` block supports the following:
 
-* `key` - (Required) The reference key. The required keys depend on `type`. For a `Build` artifact these are typically `project`, `definition`, and `defaultVersionType`.
-* `id` - (Required) The ID value for the reference key.
-* `name` - (Optional) The display name for the reference key.
+* `key` - (Required) The reference key, for example `project` or `definition`. The keys an artifact requires are determined by its `type`, as described below.
+* `id` - (Required) The value for the key. This is the value the service resolves the reference against, usually a GUID or another machine-readable identifier.
+* `name` - (Optional) The display name for the value, as shown in the Azure DevOps web UI. This is informational only and is not used to resolve the reference.
 
-~> **NOTE:** The Azure DevOps server may enrich `definition_reference` with additional keys it computes (for example `defaultVersionBranch` or `artifactSourceDefinitionUrl`). If a subsequent plan shows a diff, add the reported keys as `definition_reference` blocks to keep the configuration stable.
+Azure DevOps models all artifact types through a single generic structure, so the fields that identify a particular source are supplied as this untyped set of key/value pairs rather than as dedicated attributes. Each `type` requires a different set of keys, which together narrow the artifact down to one specific source and a default version to deploy.
+
+A `Build` artifact, for example, is described by three keys because three separate questions must be answered:
+
+* `project` - which Team Project contains the build pipeline.
+* `definition` - which build pipeline within that project produces the artifact.
+* `defaultVersionType` - which build to deploy when a release is created manually, for example `latestType` for the most recent build.
+
+Of these, only `project` and `definition` are enforced by the service; `defaultVersionType` is accepted by every artifact type and is defaulted when omitted, but the Azure DevOps web UI always writes it, so most definitions set it explicitly. The keys the service enforces for the most common artifact types are:
+
+* `Build` - `project` and `definition` (the build definition ID).
+* `Git` - `project`, `definition` (the repository ID), and `branches` (e.g. `refs/heads/main`). Note that `defaultVersionBranch` is rejected for `Git` artifacts; use `branches` instead.
+* `TFVC` - `project` and `definition`.
+* `GitHub` - `connection` (the GitHub service connection ID), `definition` (the repository), and `branch`.
+* `GitHubRelease` - `connection` (the GitHub service connection ID) and `definition` (the repository).
+* `Jenkins` - `connection` (the Jenkins service connection ID) and `definition` (the job name).
+* `PackageManagement` - `feed` (the feed ID) and `definition` (the package name).
+* `DockerHub` - `connection` (the Docker Hub service connection ID), `definition` (the repository), and `namespaces`.
+* `AzureContainerRepository` - `connection` (the Azure Resource Manager service connection ID), `definition` (the repository), `registryurl`, and `resourcegroup`.
+
+Because artifact types can be added by Azure DevOps extensions, this list cannot be exhaustive. To determine the keys for a type not listed above, either:
+
+* Add the artifact to a release definition through the Azure DevOps web UI, then read the `artifacts[].definitionReference` object back from the [Definitions - Get](https://learn.microsoft.com/en-us/rest/api/azure/devops/release/definitions/get) REST API. Its keys map one-to-one onto `definition_reference` blocks, with `id` and `name` taken from each entry.
+* Apply the artifact with the keys you expect and let the API report what is missing. It names each problem individually, for example `Input field 'branches' must be present for artifact source: '<alias>'` for a missing key, or `'defaultVersionBranch' is not a valid input field` for one that does not apply to the type.
+
+~> **NOTE:** The Azure DevOps server may enrich `definition_reference` with additional keys it computes (for example `defaultVersionBranch` or `artifactSourceDefinitionUrl`). Keys that are not listed in the configuration are ignored when the resource is read back, so they do not cause a diff. This filtering relies on the configuration, so on import any computed keys are recorded in state as well; if a plan after import shows a diff on `definition_reference`, add the extra keys to the configuration or remove them from state.
 
 An `artifact_source_trigger` block supports the following:
 
@@ -173,12 +216,56 @@ A `schedule_trigger` block supports the following:
 * `time_zone_id` - (Optional) The time zone ID for the schedule (e.g. `UTC`). Defaults to `UTC`.
 * `only_with_changes` - (Optional) Only create a release if the artifact or definition has changed since the last release. Defaults to `false`.
 
+A `source_repo_trigger` block supports the following:
+
+* `artifact_alias` - (Required) The `alias` of the source repository `artifact` this trigger watches (an artifact of type `Git`, `GitHub`, or `TFVC`).
+* `branch_filter` - (Optional) A `branch_filter` block as documented below, restricting which branches trigger a release. When omitted, pushes to any branch trigger a release.
+
+A `branch_filter` block supports the following:
+
+* `include` - (Optional) A set of branches that trigger a release when pushed to (e.g. `refs/heads/main`).
+* `exclude` - (Optional) A set of branches that do not trigger a release.
+
+~> **NOTE:** At most one `branch_filter` block may be specified, and it must set at least one of `include` or `exclude`. The service stores branch filters as a single flat list, so multiple blocks cannot be represented and an empty block would produce a persistent diff.
+
+A `container_image_trigger` block supports the following:
+
+* `artifact_alias` - (Required) The `alias` of the container repository `artifact` this trigger watches.
+* `tag_filter` - (Optional) A single image tag pattern that triggers a release. When omitted, any new image triggers a release. The service permits at most one tag filter per container image trigger.
+
+~> **NOTE:** Azure DevOps validates the registry credentials when a `container_image_trigger` is attached, so the linked service connection must hold credentials that can authenticate against the registry. Otherwise the API rejects the definition with an error such as `Unable to get access token from Docker Hub repository.`
+
+A `package_trigger` block supports the following:
+
+* `artifact_alias` - (Required) The `alias` of the package `artifact` this trigger watches.
+
+A `pull_request_trigger` block supports the following:
+
+* `artifact_alias` - (Required) The `alias` of the source repository `artifact` this trigger watches.
+* `status_policy_name` - (Optional) The name of the policy used to publish the release status back to the pull request.
+* `use_artifact_reference` - (Optional) Take the code repository details from the linked artifact rather than specifying them explicitly. Defaults to `true`. Set to `false` when supplying `code_repository_reference`.
+* `code_repository_reference` - (Optional) A `code_repository_reference` block as documented below. Only required when `use_artifact_reference` is `false`.
+* `trigger_condition` - (Optional) One or more `trigger_condition` blocks that filter which pull requests trigger a release, as documented below. When omitted, pull requests targeting any branch trigger a release.
+
+A `code_repository_reference` block supports the following:
+
+* `system_type` - (Required) The source system hosting the repository. Valid values are `tfsGit` and `gitHub`.
+* `repository_reference` - (Optional) One or more `repository_reference` blocks, each supplying a `key`, a `value`, and an optional `display_value`. The required keys depend on `system_type`; for `tfsGit` these are typically `project` and `repository`.
+
+~> **NOTE:** As with `definition_reference`, the server may enrich `repository_reference` with additional computed keys. Only the keys present in your configuration are tracked, so unlisted keys will not produce a diff.
+
+A `trigger_condition` block within `pull_request_trigger` supports the following:
+
+* `target_branch` - (Optional) Only trigger for pull requests targeting this branch (e.g. `refs/heads/main`).
+* `tags` - (Optional) A set of tags to filter on.
+
 A `stage` block supports the following:
 
 * `name` - (Required) The name of the stage (environment).
 * `rank` - (Optional) The order of the stage. Defaults to its position in the list.
 * `condition` - (Optional) One or more `condition` blocks controlling when the stage runs, as documented below. When omitted, the **first** stage defaults to starting on release creation (`ReleaseStarted`). At least one stage must start on release creation whenever a trigger is configured.
 * `variable` - (Optional) One or more stage-scoped `variable` blocks (same schema as above).
+* `secret_variable` - (Optional) One or more stage-scoped `secret_variable` blocks (same schema as above).
 * `variable_groups` - (Optional) A set of variable group IDs scoped to the stage.
 * `retention_policy` - (Optional) A `retention_policy` block as documented below.
 * `pre_deploy_approval` - (Optional) A `pre_deploy_approval` block as documented below.

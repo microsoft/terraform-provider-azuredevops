@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -21,12 +22,38 @@ import (
 
 const (
 	rdVariable          = "variable"
+	rdSecretVariable    = "secret_variable"
 	rdVariableName      = "name"
 	rdVariableValue     = "value"
-	rdVariableSecretVal = "secret_value"
-	rdVariableIsSecret  = "is_secret"
 	rdVariableCanOverwr = "allow_override"
 )
+
+func releaseVariableSchema(secret bool) *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				rdVariableName: {
+					Type:         schema.TypeString,
+					Required:     true,
+					ValidateFunc: validation.StringIsNotWhiteSpace,
+				},
+				rdVariableValue: {
+					Type:      schema.TypeString,
+					Optional:  true,
+					Default:   "",
+					Sensitive: secret,
+				},
+				rdVariableCanOverwr: {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Default:  false,
+				},
+			},
+		},
+	}
+}
 
 func ResourceReleaseDefinition() *schema.Resource {
 	return &schema.Resource{
@@ -35,6 +62,7 @@ func ResourceReleaseDefinition() *schema.Resource {
 		UpdateContext: resourceReleaseDefinitionUpdate,
 		DeleteContext: resourceReleaseDefinitionDelete,
 		Importer:      tfhelper.ImportProjectQualifiedResource(),
+		CustomizeDiff: resourceReleaseDefinitionCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"project_id": {
 				Type:     schema.TypeString,
@@ -69,40 +97,8 @@ func ResourceReleaseDefinition() *schema.Resource {
 					ValidateFunc: validation.IntAtLeast(1),
 				},
 			},
-			rdVariable: {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						rdVariableName: {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringIsNotWhiteSpace,
-						},
-						rdVariableValue: {
-							Type:     schema.TypeString,
-							Optional: true,
-							Default:  "",
-						},
-						rdVariableSecretVal: {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-							Default:   "",
-						},
-						rdVariableIsSecret: {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
-						},
-						rdVariableCanOverwr: {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
-						},
-					},
-				},
-			},
+			rdVariable:       releaseVariableSchema(false),
+			rdSecretVariable: releaseVariableSchema(true),
 			"artifact": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -114,19 +110,9 @@ func ResourceReleaseDefinition() *schema.Resource {
 							ValidateFunc: validation.StringIsNotWhiteSpace,
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
-							ValidateFunc: validation.StringInSlice([]string{
-								"Build",
-								"Jenkins",
-								"GitHub",
-								"Nuget",
-								"Team Build (external)",
-								"ExternalTFSBuild",
-								"Git",
-								"TFVC",
-								"ExternalTfsXamlBuild",
-							}, false),
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
 						},
 						"is_primary": {
 							Type:     schema.TypeBool,
@@ -252,6 +238,151 @@ func ResourceReleaseDefinition() *schema.Resource {
 					},
 				},
 			},
+			"source_repo_trigger": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"artifact_alias": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+						},
+						"branch_filter": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"include": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+									},
+									"exclude": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"container_image_trigger": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"artifact_alias": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+						},
+						"tag_filter": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							MaxItems: 1,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+			},
+			"package_trigger": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"artifact_alias": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+						},
+					},
+				},
+			},
+			"pull_request_trigger": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"artifact_alias": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+						},
+						"status_policy_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Default:  "",
+						},
+						"use_artifact_reference": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"code_repository_reference": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"system_type": {
+										Type:     schema.TypeString,
+										Required: true,
+										ValidateFunc: validation.StringInSlice([]string{
+											string(release.PullRequestSystemTypeValues.TfsGit),
+											string(release.PullRequestSystemTypeValues.GitHub),
+										}, false),
+									},
+									"repository_reference": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": {
+													Type:         schema.TypeString,
+													Required:     true,
+													ValidateFunc: validation.StringIsNotWhiteSpace,
+												},
+												"value": {
+													Type:         schema.TypeString,
+													Required:     true,
+													ValidateFunc: validation.StringIsNotWhiteSpace,
+												},
+												"display_value": {
+													Type:     schema.TypeString,
+													Optional: true,
+													Default:  "",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"trigger_condition": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"target_branch": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "",
+									},
+									"tags": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"stage": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -303,40 +434,8 @@ func ResourceReleaseDefinition() *schema.Resource {
 								ValidateFunc: validation.IntAtLeast(1),
 							},
 						},
-						rdVariable: {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									rdVariableName: {
-										Type:         schema.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringIsNotWhiteSpace,
-									},
-									rdVariableValue: {
-										Type:     schema.TypeString,
-										Optional: true,
-										Default:  "",
-									},
-									rdVariableSecretVal: {
-										Type:      schema.TypeString,
-										Optional:  true,
-										Sensitive: true,
-										Default:   "",
-									},
-									rdVariableIsSecret: {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  false,
-									},
-									rdVariableCanOverwr: {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  false,
-									},
-								},
-							},
-						},
+						rdVariable:       releaseVariableSchema(false),
+						rdSecretVariable: releaseVariableSchema(true),
 						"retention_policy": {
 							Type:     schema.TypeList,
 							Optional: true,
@@ -775,9 +874,6 @@ func approvalSchema() *schema.Schema {
 
 func resourceReleaseDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	if err := validateReleaseVariables(d); err != nil {
-		return diag.FromErr(err)
-	}
 	releaseDefinition, projectID := expandReleaseDefinition(d)
 
 	createdReleaseDefinition, err := clients.ReleaseClient.CreateReleaseDefinition(ctx, release.CreateReleaseDefinitionArgs{
@@ -816,9 +912,6 @@ func resourceReleaseDefinitionRead(ctx context.Context, d *schema.ResourceData, 
 
 func resourceReleaseDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
-	if err := validateReleaseVariables(d); err != nil {
-		return diag.FromErr(err)
-	}
 	releaseDefinition, projectID := expandReleaseDefinition(d)
 
 	existing, err := clients.ReleaseClient.GetReleaseDefinition(ctx, release.GetReleaseDefinitionArgs{
@@ -848,6 +941,10 @@ func mergeUnmanagedTriggers(expanded, existing *[]interface{}) *[]interface{} {
 	managed := map[string]bool{
 		string(release.ReleaseTriggerTypeValues.ArtifactSource): true,
 		string(release.ReleaseTriggerTypeValues.Schedule):       true,
+		string(release.ReleaseTriggerTypeValues.SourceRepo):     true,
+		string(release.ReleaseTriggerTypeValues.ContainerImage): true,
+		string(release.ReleaseTriggerTypeValues.Package):        true,
+		string(release.ReleaseTriggerTypeValues.PullRequest):    true,
 	}
 	result := make([]interface{}, 0)
 	if expanded != nil {
@@ -892,11 +989,11 @@ func expandReleaseDefinition(d *schema.ResourceData) (*release.ReleaseDefinition
 		Path:              converter.String(d.Get("path").(string)),
 		Description:       converter.String(d.Get("description").(string)),
 		ReleaseNameFormat: converter.String(d.Get("release_name_format").(string)),
-		Variables:         expandReleaseVariables(d.Get(rdVariable).(*schema.Set).List()),
+		Variables:         expandReleaseVariables(d.Get(rdVariable).(*schema.Set).List(), d.Get(rdSecretVariable).(*schema.Set).List()),
 		VariableGroups:    expandReleaseVariableGroups(d.Get("variable_groups").(*schema.Set).List()),
 		Artifacts:         expandReleaseArtifacts(d.Get("artifact").(*schema.Set).List()),
 		Environments:      expandReleaseStages(d.Get("stage").([]interface{})),
-		Triggers:          expandReleaseTriggers(d.Get("artifact_source_trigger").([]interface{}), d.Get("schedule_trigger").([]interface{})),
+		Triggers:          expandReleaseTriggers(d),
 	}
 
 	if !d.IsNewResource() {
@@ -911,77 +1008,86 @@ func expandReleaseDefinition(d *schema.ResourceData) (*release.ReleaseDefinition
 	return releaseDefinition, projectID
 }
 
-func expandReleaseVariables(input []interface{}) *map[string]release.ConfigurationVariableValue {
+func expandReleaseVariables(input, secretInput []interface{}) *map[string]release.ConfigurationVariableValue {
 	variables := map[string]release.ConfigurationVariableValue{}
 	for _, item := range input {
 		variable := item.(map[string]interface{})
-		isSecret := variable[rdVariableIsSecret].(bool)
-		value := variable[rdVariableValue].(string)
-		if isSecret {
-			value = variable[rdVariableSecretVal].(string)
-		}
 		variables[variable[rdVariableName].(string)] = release.ConfigurationVariableValue{
-			Value:         converter.String(value),
-			IsSecret:      converter.Bool(isSecret),
+			Value:         converter.String(variable[rdVariableValue].(string)),
+			IsSecret:      converter.Bool(false),
+			AllowOverride: converter.Bool(variable[rdVariableCanOverwr].(bool)),
+		}
+	}
+	for _, item := range secretInput {
+		variable := item.(map[string]interface{})
+		variables[variable[rdVariableName].(string)] = release.ConfigurationVariableValue{
+			Value:         converter.String(variable[rdVariableValue].(string)),
+			IsSecret:      converter.Bool(true),
 			AllowOverride: converter.Bool(variable[rdVariableCanOverwr].(bool)),
 		}
 	}
 	return &variables
 }
 
-func validateReleaseVariables(d *schema.ResourceData) error {
+func validateReleaseVariables(d *schema.ResourceDiff) error {
 	raw := d.GetRawConfig()
 	if raw.IsNull() {
 		return nil
 	}
 	config := raw.AsValueMap()
 
-	if variables := config[rdVariable]; !variables.IsNull() {
-		for it := variables.ElementIterator(); it.Next(); {
-			_, variable := it.Element()
-			attrs := variable.AsValueMap()
-			if err := validateVariableExclusivity(
-				attrs[rdVariableName].AsString(),
-				!attrs[rdVariableValue].IsNull(),
-				!attrs[rdVariableSecretVal].IsNull(),
-				!attrs[rdVariableIsSecret].IsNull(),
-			); err != nil {
-				return err
-			}
-		}
+	if err := checkDuplicateVariableNames(config[rdVariable], config[rdSecretVariable], ""); err != nil {
+		return err
 	}
 
 	stages := config["stage"]
-	if stages.IsNull() {
+	if stages.IsNull() || !stages.IsKnown() {
 		return nil
 	}
 	for sit := stages.ElementIterator(); sit.Next(); {
 		_, stage := sit.Element()
-		variables := stage.AsValueMap()[rdVariable]
-		if variables.IsNull() {
-			continue
+		attrs := stage.AsValueMap()
+		name := ""
+		if stageName := attrs["name"]; !stageName.IsNull() && stageName.IsKnown() {
+			name = stageName.AsString()
 		}
-		for it := variables.ElementIterator(); it.Next(); {
-			_, variable := it.Element()
-			attrs := variable.AsValueMap()
-			if err := validateVariableExclusivity(
-				attrs[rdVariableName].AsString(),
-				!attrs[rdVariableValue].IsNull(),
-				!attrs[rdVariableSecretVal].IsNull(),
-				!attrs[rdVariableIsSecret].IsNull(),
-			); err != nil {
-				return err
-			}
+		if err := checkDuplicateVariableNames(attrs[rdVariable], attrs[rdSecretVariable], name); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func validateVariableExclusivity(name string, valueSet, secretValueSet, isSecret bool) error {
-	if valueSet && (secretValueSet || isSecret) || secretValueSet != isSecret {
-		return fmt.Errorf("`%s` variable can have either only `value` attribute or both `is_secret` and `secret_value` attributes", name)
+func checkDuplicateVariableNames(variables, secretVariables cty.Value, stage string) error {
+	names := map[string]bool{}
+	for _, name := range variableNames(variables) {
+		names[name] = true
+	}
+	for _, name := range variableNames(secretVariables) {
+		if names[name] {
+			if stage != "" {
+				return fmt.Errorf("stage `%s`: `%s` is declared as both a `variable` and a `secret_variable`", stage, name)
+			}
+			return fmt.Errorf("`%s` is declared as both a `variable` and a `secret_variable`", name)
+		}
 	}
 	return nil
+}
+
+func variableNames(variables cty.Value) []string {
+	if variables.IsNull() || !variables.IsKnown() {
+		return nil
+	}
+	names := make([]string, 0)
+	for it := variables.ElementIterator(); it.Next(); {
+		_, variable := it.Element()
+		name := variable.AsValueMap()[rdVariableName]
+		if name.IsNull() || !name.IsKnown() {
+			continue
+		}
+		names = append(names, name.AsString())
+	}
+	return names
 }
 
 func expandReleaseVariableGroups(input []interface{}) *[]int {
@@ -1019,8 +1125,16 @@ func expandArtifactDefinitionReference(input []interface{}) *map[string]release.
 	return &refs
 }
 
-func expandReleaseTriggers(artifactSourceInput, scheduleInput []interface{}) *[]interface{} {
-	triggers := make([]interface{}, 0, len(artifactSourceInput)+len(scheduleInput))
+func expandReleaseTriggers(d *schema.ResourceData) *[]interface{} {
+	artifactSourceInput := d.Get("artifact_source_trigger").([]interface{})
+	scheduleInput := d.Get("schedule_trigger").([]interface{})
+	sourceRepoInput := d.Get("source_repo_trigger").([]interface{})
+	containerImageInput := d.Get("container_image_trigger").([]interface{})
+	packageInput := d.Get("package_trigger").([]interface{})
+	pullRequestInput := d.Get("pull_request_trigger").([]interface{})
+
+	triggers := make([]interface{}, 0, len(artifactSourceInput)+len(scheduleInput)+
+		len(sourceRepoInput)+len(containerImageInput)+len(packageInput)+len(pullRequestInput))
 
 	for _, item := range artifactSourceInput {
 		trigger := item.(map[string]interface{})
@@ -1046,7 +1160,162 @@ func expandReleaseTriggers(artifactSourceInput, scheduleInput []interface{}) *[]
 		})
 	}
 
+	for _, item := range sourceRepoInput {
+		trigger := item.(map[string]interface{})
+		triggers = append(triggers, release.SourceRepoTrigger{
+			TriggerType:   &release.ReleaseTriggerTypeValues.SourceRepo,
+			Alias:         converter.String(trigger["artifact_alias"].(string)),
+			BranchFilters: expandBranchFilters(trigger["branch_filter"].(*schema.Set).List()),
+		})
+	}
+
+	for _, item := range containerImageInput {
+		trigger := item.(map[string]interface{})
+		triggers = append(triggers, release.ContainerImageTrigger{
+			TriggerType: &release.ReleaseTriggerTypeValues.ContainerImage,
+			Alias:       converter.String(trigger["artifact_alias"].(string)),
+			TagFilters:  expandTagFilters(trigger["tag_filter"].(*schema.Set).List()),
+		})
+	}
+
+	for _, item := range packageInput {
+		trigger := item.(map[string]interface{})
+		triggers = append(triggers, release.PackageTrigger{
+			TriggerType: &release.ReleaseTriggerTypeValues.Package,
+			Alias:       converter.String(trigger["artifact_alias"].(string)),
+		})
+	}
+
+	for _, item := range pullRequestInput {
+		trigger := item.(map[string]interface{})
+		triggers = append(triggers, release.PullRequestTrigger{
+			TriggerType:              &release.ReleaseTriggerTypeValues.PullRequest,
+			ArtifactAlias:            converter.String(trigger["artifact_alias"].(string)),
+			StatusPolicyName:         converter.String(trigger["status_policy_name"].(string)),
+			PullRequestConfiguration: expandPullRequestConfiguration(trigger),
+			TriggerConditions:        expandPullRequestFilters(trigger["trigger_condition"].([]interface{})),
+		})
+	}
+
 	return &triggers
+}
+
+func expandTagFilters(input []interface{}) *[]release.TagFilter {
+	filters := make([]release.TagFilter, 0, len(input))
+	for _, item := range input {
+		pattern, ok := item.(string)
+		if !ok {
+			continue
+		}
+		filters = append(filters, release.TagFilter{Pattern: converter.String(pattern)})
+	}
+	return &filters
+}
+
+func resourceReleaseDefinitionCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if err := validateReleaseVariables(d); err != nil {
+		return err
+	}
+	return validateBranchFilters(d)
+}
+
+func validateBranchFilters(d *schema.ResourceDiff) error {
+	raw := d.GetRawConfig()
+	if raw.IsNull() {
+		return nil
+	}
+	triggers := raw.AsValueMap()["source_repo_trigger"]
+	if triggers.IsNull() || !triggers.IsKnown() {
+		return nil
+	}
+
+	index := 0
+	for it := triggers.ElementIterator(); it.Next(); {
+		_, trigger := it.Element()
+		filters := trigger.AsValueMap()["branch_filter"]
+		index++
+		if filters.IsNull() || !filters.IsKnown() {
+			continue
+		}
+		for fit := filters.ElementIterator(); fit.Next(); {
+			_, filter := fit.Element()
+			attrs := filter.AsValueMap()
+			if isEmptyBranchFilterSet(attrs["include"]) && isEmptyBranchFilterSet(attrs["exclude"]) {
+				return fmt.Errorf("source_repo_trigger[%d]: `branch_filter` must specify at least one of `include` or `exclude`", index-1)
+			}
+		}
+	}
+	return nil
+}
+
+func isEmptyBranchFilterSet(value cty.Value) bool {
+	if value.IsNull() {
+		return true
+	}
+	if !value.IsKnown() {
+		return false
+	}
+	return value.LengthInt() == 0
+}
+
+func expandBranchFilters(input []interface{}) *[]string {
+	filters := make([]string, 0)
+	for _, item := range input {
+		filter, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		for _, v := range filter["include"].(*schema.Set).List() {
+			filters = append(filters, "+"+v.(string))
+		}
+		for _, v := range filter["exclude"].(*schema.Set).List() {
+			filters = append(filters, "-"+v.(string))
+		}
+	}
+	return &filters
+}
+
+func expandPullRequestFilters(input []interface{}) *[]release.PullRequestFilter {
+	filters := make([]release.PullRequestFilter, 0, len(input))
+	for _, item := range input {
+		filter := item.(map[string]interface{})
+		filters = append(filters, release.PullRequestFilter{
+			TargetBranch: converter.String(filter["target_branch"].(string)),
+			Tags:         expandStringSet(filter["tags"].(*schema.Set).List()),
+		})
+	}
+	return &filters
+}
+
+func expandPullRequestConfiguration(trigger map[string]interface{}) *release.PullRequestConfiguration {
+	config := &release.PullRequestConfiguration{
+		UseArtifactReference: converter.Bool(trigger["use_artifact_reference"].(bool)),
+	}
+
+	refs, ok := trigger["code_repository_reference"].([]interface{})
+	if !ok || len(refs) == 0 {
+		return config
+	}
+	ref, ok := refs[0].(map[string]interface{})
+	if !ok {
+		return config
+	}
+
+	systemType := release.PullRequestSystemType(ref["system_type"].(string))
+	repositoryReference := map[string]release.ReleaseManagementInputValue{}
+	for _, item := range ref["repository_reference"].(*schema.Set).List() {
+		entry := item.(map[string]interface{})
+		repositoryReference[entry["key"].(string)] = release.ReleaseManagementInputValue{
+			Value:        converter.String(entry["value"].(string)),
+			DisplayValue: converter.String(entry["display_value"].(string)),
+		}
+	}
+
+	config.CodeRepositoryReference = &release.CodeRepositoryReference{
+		SystemType:          &systemType,
+		RepositoryReference: &repositoryReference,
+	}
+	return config
 }
 
 func expandArtifactFilters(input []interface{}) *[]release.ArtifactFilter {
@@ -1087,8 +1356,12 @@ func flattenReleaseDefinition(d *schema.ResourceData, releaseDefinition *release
 	d.Set("release_name_format", converter.ToString(releaseDefinition.ReleaseNameFormat, ""))
 	d.Set("revision", converter.ToInt(releaseDefinition.Revision, 0))
 
-	if err := d.Set(rdVariable, flattenReleaseVariables(releaseDefinition.Variables, d.Get(rdVariable).(*schema.Set).List())); err != nil {
+	variables, secretVariables := flattenReleaseVariables(releaseDefinition.Variables, d.Get(rdSecretVariable).(*schema.Set).List())
+	if err := d.Set(rdVariable, variables); err != nil {
 		return fmt.Errorf("setting `variable`: %+v", err)
+	}
+	if err := d.Set(rdSecretVariable, secretVariables); err != nil {
+		return fmt.Errorf("setting `secret_variable`: %+v", err)
 	}
 	if err := d.Set("variable_groups", flattenReleaseVariableGroups(releaseDefinition.VariableGroups)); err != nil {
 		return fmt.Errorf("setting `variable_groups`: %+v", err)
@@ -1096,12 +1369,24 @@ func flattenReleaseDefinition(d *schema.ResourceData, releaseDefinition *release
 	if err := d.Set("artifact", flattenReleaseArtifacts(releaseDefinition.Artifacts, artifactDefinitionKeysFromConfig(d))); err != nil {
 		return fmt.Errorf("setting `artifact`: %+v", err)
 	}
-	artifactSourceTriggers, scheduleTriggers := flattenReleaseTriggers(releaseDefinition.Triggers, d.Get("schedule_trigger").([]interface{}))
-	if err := d.Set("artifact_source_trigger", artifactSourceTriggers); err != nil {
+	triggers := flattenReleaseTriggers(releaseDefinition.Triggers, d.Get("schedule_trigger").([]interface{}), d.Get("pull_request_trigger").([]interface{}))
+	if err := d.Set("artifact_source_trigger", triggers.artifactSource); err != nil {
 		return fmt.Errorf("setting `artifact_source_trigger`: %+v", err)
 	}
-	if err := d.Set("schedule_trigger", scheduleTriggers); err != nil {
+	if err := d.Set("schedule_trigger", triggers.schedule); err != nil {
 		return fmt.Errorf("setting `schedule_trigger`: %+v", err)
+	}
+	if err := d.Set("source_repo_trigger", triggers.sourceRepo); err != nil {
+		return fmt.Errorf("setting `source_repo_trigger`: %+v", err)
+	}
+	if err := d.Set("container_image_trigger", triggers.containerImage); err != nil {
+		return fmt.Errorf("setting `container_image_trigger`: %+v", err)
+	}
+	if err := d.Set("package_trigger", triggers.pkg); err != nil {
+		return fmt.Errorf("setting `package_trigger`: %+v", err)
+	}
+	if err := d.Set("pull_request_trigger", triggers.pullRequest); err != nil {
+		return fmt.Errorf("setting `pull_request_trigger`: %+v", err)
 	}
 	if err := d.Set("stage", flattenReleaseStages(d, releaseDefinition.Environments)); err != nil {
 		return fmt.Errorf("setting `stage`: %+v", err)
@@ -1110,29 +1395,30 @@ func flattenReleaseDefinition(d *schema.ResourceData, releaseDefinition *release
 	return nil
 }
 
-func flattenReleaseVariables(input *map[string]release.ConfigurationVariableValue, stateVars []interface{}) []interface{} {
+func flattenReleaseVariables(input *map[string]release.ConfigurationVariableValue, priorSecretVars []interface{}) (variables, secretVariables []interface{}) {
 	if input == nil {
-		return nil
+		return nil, nil
 	}
-	variables := make([]interface{}, 0, len(*input))
 	for name, value := range *input {
-		isSecret := converter.ToBool(value.IsSecret, false)
-		variable := map[string]interface{}{
+		if converter.ToBool(value.IsSecret, false) {
+			secret := map[string]interface{}{
+				rdVariableName:      name,
+				rdVariableValue:     "",
+				rdVariableCanOverwr: converter.ToBool(value.AllowOverride, false),
+			}
+			if prior := findVariableInState(priorSecretVars, name); prior != nil {
+				secret[rdVariableValue] = prior[rdVariableValue]
+			}
+			secretVariables = append(secretVariables, secret)
+			continue
+		}
+		variables = append(variables, map[string]interface{}{
 			rdVariableName:      name,
 			rdVariableValue:     converter.ToString(value.Value, ""),
-			rdVariableSecretVal: "",
-			rdVariableIsSecret:  isSecret,
 			rdVariableCanOverwr: converter.ToBool(value.AllowOverride, false),
-		}
-		if isSecret {
-			variable[rdVariableValue] = ""
-			if prior := findVariableInState(stateVars, name); prior != nil {
-				variable[rdVariableSecretVal] = prior[rdVariableSecretVal]
-			}
-		}
-		variables = append(variables, variable)
+		})
 	}
-	return variables
+	return variables, secretVariables
 }
 
 func findVariableInState(stateVars []interface{}, name string) map[string]interface{} {
@@ -1205,11 +1491,26 @@ func flattenArtifactDefinitionReference(input *map[string]release.ArtifactSource
 	return refs
 }
 
-func flattenReleaseTriggers(input *[]interface{}, priorSchedules []interface{}) ([]interface{}, []interface{}) {
-	artifactSourceTriggers := make([]interface{}, 0)
-	scheduleTriggers := make([]interface{}, 0)
+type releaseTriggerBlocks struct {
+	artifactSource []interface{}
+	schedule       []interface{}
+	sourceRepo     []interface{}
+	containerImage []interface{}
+	pkg            []interface{}
+	pullRequest    []interface{}
+}
+
+func flattenReleaseTriggers(input *[]interface{}, priorSchedules []interface{}, priorPullRequests []interface{}) releaseTriggerBlocks {
+	blocks := releaseTriggerBlocks{
+		artifactSource: make([]interface{}, 0),
+		schedule:       make([]interface{}, 0),
+		sourceRepo:     make([]interface{}, 0),
+		containerImage: make([]interface{}, 0),
+		pkg:            make([]interface{}, 0),
+		pullRequest:    make([]interface{}, 0),
+	}
 	if input == nil {
-		return artifactSourceTriggers, scheduleTriggers
+		return blocks
 	}
 
 	for _, item := range *input {
@@ -1219,7 +1520,7 @@ func flattenReleaseTriggers(input *[]interface{}, priorSchedules []interface{}) 
 		}
 		switch stringFromMap(trigger, "triggerType") {
 		case string(release.ReleaseTriggerTypeValues.ArtifactSource):
-			artifactSourceTriggers = append(artifactSourceTriggers, map[string]interface{}{
+			blocks.artifactSource = append(blocks.artifactSource, map[string]interface{}{
 				"artifact_alias":    stringFromMap(trigger, "artifactAlias"),
 				"trigger_condition": flattenArtifactFilters(trigger["triggerConditions"]),
 			})
@@ -1227,19 +1528,173 @@ func flattenReleaseTriggers(input *[]interface{}, priorSchedules []interface{}) 
 			schedule, _ := trigger["schedule"].(map[string]interface{})
 			days := reconcileScheduleDays(
 				flattenScheduleDays(schedule["daysToRelease"]),
-				priorScheduleDays(priorSchedules, len(scheduleTriggers)),
+				priorScheduleDays(priorSchedules, len(blocks.schedule)),
 			)
-			scheduleTriggers = append(scheduleTriggers, map[string]interface{}{
+			blocks.schedule = append(blocks.schedule, map[string]interface{}{
 				"days":              days,
 				"start_hours":       intFromMap(schedule, "startHours"),
 				"start_minutes":     intFromMap(schedule, "startMinutes"),
 				"time_zone_id":      stringFromMap(schedule, "timeZoneId"),
 				"only_with_changes": boolFromMap(schedule, "scheduleOnlyWithChanges"),
 			})
+		case string(release.ReleaseTriggerTypeValues.SourceRepo):
+			blocks.sourceRepo = append(blocks.sourceRepo, map[string]interface{}{
+				"artifact_alias": stringFromMap(trigger, "alias"),
+				"branch_filter":  flattenBranchFilters(trigger["branchFilters"]),
+			})
+		case string(release.ReleaseTriggerTypeValues.ContainerImage):
+			blocks.containerImage = append(blocks.containerImage, map[string]interface{}{
+				"artifact_alias": stringFromMap(trigger, "alias"),
+				"tag_filter":     flattenTagFilters(trigger["tagFilters"]),
+			})
+		case string(release.ReleaseTriggerTypeValues.Package):
+			blocks.pkg = append(blocks.pkg, map[string]interface{}{
+				"artifact_alias": stringFromMap(trigger, "alias"),
+			})
+		case string(release.ReleaseTriggerTypeValues.PullRequest):
+			config, _ := trigger["pullRequestConfiguration"].(map[string]interface{})
+			blocks.pullRequest = append(blocks.pullRequest, map[string]interface{}{
+				"artifact_alias":            stringFromMap(trigger, "artifactAlias"),
+				"status_policy_name":        stringFromMap(trigger, "statusPolicyName"),
+				"use_artifact_reference":    boolFromMap(config, "useArtifactReference"),
+				"code_repository_reference": flattenCodeRepositoryReference(config, priorRepositoryReferenceKeys(priorPullRequests, len(blocks.pullRequest))),
+				"trigger_condition":         flattenPullRequestFilters(trigger["triggerConditions"]),
+			})
 		}
 	}
 
-	return artifactSourceTriggers, scheduleTriggers
+	return blocks
+}
+
+func flattenBranchFilters(input interface{}) []interface{} {
+	values, ok := input.([]interface{})
+	if !ok || len(values) == 0 {
+		return nil
+	}
+	include := make([]interface{}, 0)
+	exclude := make([]interface{}, 0)
+	for _, item := range values {
+		filter, ok := item.(string)
+		if !ok {
+			continue
+		}
+		switch {
+		case strings.HasPrefix(filter, "-"):
+			exclude = append(exclude, strings.TrimPrefix(filter, "-"))
+		default:
+			include = append(include, strings.TrimPrefix(filter, "+"))
+		}
+	}
+	return []interface{}{map[string]interface{}{
+		"include": include,
+		"exclude": exclude,
+	}}
+}
+
+func flattenTagFilters(input interface{}) []interface{} {
+	rawFilters, ok := input.([]interface{})
+	if !ok {
+		return nil
+	}
+	patterns := make([]interface{}, 0, len(rawFilters))
+	for _, item := range rawFilters {
+		filter, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		patterns = append(patterns, stringFromMap(filter, "pattern"))
+	}
+	return patterns
+}
+
+func flattenPullRequestFilters(input interface{}) []interface{} {
+	rawFilters, ok := input.([]interface{})
+	if !ok {
+		return nil
+	}
+	filters := make([]interface{}, 0, len(rawFilters))
+	for _, item := range rawFilters {
+		filter, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		result := map[string]interface{}{
+			"target_branch": stringFromMap(filter, "targetBranch"),
+		}
+		if tags, ok := filter["tags"].([]interface{}); ok {
+			result["tags"] = tags
+		}
+		filters = append(filters, result)
+	}
+	return filters
+}
+
+func priorRepositoryReferenceKeys(priorPullRequests []interface{}, index int) map[string]bool {
+	if index >= len(priorPullRequests) {
+		return nil
+	}
+	trigger, ok := priorPullRequests[index].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	refs, ok := trigger["code_repository_reference"].([]interface{})
+	if !ok || len(refs) == 0 {
+		return nil
+	}
+	ref, ok := refs[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	set, ok := ref["repository_reference"].(*schema.Set)
+	if !ok {
+		return nil
+	}
+	keys := map[string]bool{}
+	for _, item := range set.List() {
+		entry, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		keys[entry["key"].(string)] = true
+	}
+	return keys
+}
+
+func flattenCodeRepositoryReference(config map[string]interface{}, allowedKeys map[string]bool) []interface{} {
+	if config == nil {
+		return nil
+	}
+	ref, ok := config["codeRepositoryReference"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	rawRefs, _ := ref["repositoryReference"].(map[string]interface{})
+	references := make([]interface{}, 0, len(rawRefs))
+	for key, item := range rawRefs {
+		if allowedKeys != nil && !allowedKeys[key] {
+			continue
+		}
+		value, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		references = append(references, map[string]interface{}{
+			"key":           key,
+			"value":         stringFromMap(value, "value"),
+			"display_value": stringFromMap(value, "displayValue"),
+		})
+	}
+
+	systemType := stringFromMap(ref, "systemType")
+	if len(references) == 0 && (systemType == "" || strings.EqualFold(systemType, string(release.PullRequestSystemTypeValues.None))) {
+		return nil
+	}
+
+	return []interface{}{map[string]interface{}{
+		"system_type":          systemType,
+		"repository_reference": references,
+	}}
 }
 
 func priorScheduleDays(priorSchedules []interface{}, index int) []interface{} {
@@ -1377,7 +1832,7 @@ func expandReleaseStages(input []interface{}) *[]release.ReleaseDefinitionEnviro
 			Name:                converter.String(stage["name"].(string)),
 			Rank:                converter.Int(rank),
 			Conditions:          expandReleaseConditions(stage["condition"].([]interface{}), i == 0),
-			Variables:           expandReleaseVariables(stage[rdVariable].(*schema.Set).List()),
+			Variables:           expandReleaseVariables(stage[rdVariable].(*schema.Set).List(), stage[rdSecretVariable].(*schema.Set).List()),
 			VariableGroups:      expandReleaseVariableGroups(stage["variable_groups"].(*schema.Set).List()),
 			RetentionPolicy:     expandReleaseRetentionPolicy(stage["retention_policy"].([]interface{})),
 			PreDeployApprovals:  expandReleaseApprovals(stage["pre_deploy_approval"].([]interface{})),
@@ -1671,11 +2126,13 @@ func flattenReleaseStages(d *schema.ResourceData, input *[]release.ReleaseDefini
 	stages := make([]interface{}, 0, len(*input))
 	for _, environment := range *input {
 		name := converter.ToString(environment.Name, "")
+		variables, secretVariables := flattenReleaseVariables(environment.Variables, priorStageSecretVariables(priorStages, name))
 		stages = append(stages, map[string]interface{}{
 			"name":                  name,
 			"rank":                  converter.ToInt(environment.Rank, 0),
 			"condition":             flattenReleaseConditions(environment.Conditions),
-			rdVariable:              flattenReleaseVariables(environment.Variables, priorStageVariables(priorStages, name)),
+			rdVariable:              variables,
+			rdSecretVariable:        secretVariables,
 			"variable_groups":       flattenReleaseVariableGroups(environment.VariableGroups),
 			"retention_policy":      flattenReleaseRetentionPolicy(environment.RetentionPolicy),
 			"pre_deploy_approval":   flattenReleaseApprovals(environment.PreDeployApprovals),
@@ -1691,13 +2148,13 @@ func flattenReleaseStages(d *schema.ResourceData, input *[]release.ReleaseDefini
 	return stages
 }
 
-func priorStageVariables(priorStages []interface{}, name string) []interface{} {
+func priorStageSecretVariables(priorStages []interface{}, name string) []interface{} {
 	for _, item := range priorStages {
 		stage, ok := item.(map[string]interface{})
 		if !ok || stage["name"] != name {
 			continue
 		}
-		if set, ok := stage[rdVariable].(*schema.Set); ok {
+		if set, ok := stage[rdSecretVariable].(*schema.Set); ok {
 			return set.List()
 		}
 	}
