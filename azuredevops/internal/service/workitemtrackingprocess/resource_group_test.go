@@ -313,6 +313,7 @@ func TestGroup_Read_Successful(t *testing.T) {
 		"order":                         strconv.Itoa(order),
 		"visible":                       strconv.FormatBool(visible),
 		"id":                            groupId,
+		"control.#":                     "0",
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
@@ -320,6 +321,77 @@ func TestGroup_Read_Successful(t *testing.T) {
 	if diff := cmp.Diff(expectedGroup, d.State().Attributes, diffOptions...); diff != "" {
 		t.Errorf("Resource data attributes mismatch (-want +got):\n%s", diff)
 	}
+}
+
+func TestGroup_Update_SuccessfulWithControls(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := azdosdkmocks.NewMockWorkitemtrackingprocessClient(ctrl)
+	clients := &client.AggregatedClient{WorkItemTrackingProcessClient: mockClient, Ctx: context.Background()}
+
+	processId := uuid.New()
+	witRefName := "MyNewAgileProcess.MyWorkItemType"
+	pageId := "page-1"
+	sectionId := "section-1"
+	groupId := "group-1"
+	label := "My Group"
+	order := 1
+	visible := true
+
+	controlId := "System.Title"
+	controlLabel := "Title"
+
+	returnGroup := &workitemtrackingprocess.Group{
+		Id:      &groupId,
+		Label:   &label,
+		Order:   &order,
+		Visible: &visible,
+		Controls: &[]workitemtrackingprocess.Control{
+			{
+				Id:    &controlId,
+				Label: &controlLabel,
+			},
+		},
+	}
+
+	// Mocking MoveGroupToPage because TestResourceDataRaw makes everything "changed"
+	mockClient.EXPECT().MoveGroupToPage(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.MoveGroupToPageArgs) (*workitemtrackingprocess.Group, error) {
+			assert.NotNil(t, args.Group.Controls)
+			assert.Len(t, *args.Group.Controls, 1)
+			assert.Equal(t, controlId, *(*args.Group.Controls)[0].Id)
+			return returnGroup, nil
+		},
+	).Times(1)
+
+	returnWorkItemType := createProcessWorkItemTypeWithGroup(witRefName, pageId, sectionId, *returnGroup)
+
+	mockClient.EXPECT().GetProcessWorkItemType(clients.Ctx, gomock.Any()).DoAndReturn(
+		func(ctx context.Context, args workitemtrackingprocess.GetProcessWorkItemTypeArgs) (*workitemtrackingprocess.ProcessWorkItemType, error) {
+			return returnWorkItemType, nil
+		},
+	).Times(4)
+
+	d := getGroupResourceData(t, map[string]any{
+		"process_id":                    processId.String(),
+		"work_item_type_reference_name": witRefName,
+		"page_id":                       pageId,
+		"section_id":                    sectionId,
+		"label":                         label,
+		"order":                         order,
+		"visible":                       visible,
+		"control": []any{
+			map[string]any{
+				"id":    controlId,
+				"label": controlLabel,
+			},
+		},
+	})
+	d.SetId(groupId)
+
+	diags := updateResourceGroup(context.Background(), d, clients)
+	assert.Empty(t, diags)
 }
 
 func TestGroup_FindGroupById(t *testing.T) {
@@ -657,6 +729,7 @@ func TestGroup_Update_Successful(t *testing.T) {
 		"order":                         strconv.Itoa(order),
 		"visible":                       strconv.FormatBool(visible),
 		"id":                            groupId,
+		"control.#":                     "0",
 	}
 	diffOptions := []cmp.Option{
 		cmpopts.EquateEmpty(),
