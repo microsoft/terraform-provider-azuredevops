@@ -55,11 +55,10 @@ func TestServiceEndpointSonarQube_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*sonarQubeTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointSonarQube(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointSonarQube(resourceData)
 
 	require.Equal(t, sonarQubeTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, sonarQubeTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
