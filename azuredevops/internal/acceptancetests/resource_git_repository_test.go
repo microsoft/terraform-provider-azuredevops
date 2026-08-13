@@ -6,8 +6,10 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/git"
@@ -113,6 +115,53 @@ func TestAccGitRepository_disabled(t *testing.T) {
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
 					resource.TestCheckResourceAttr(tfRepoNode, "disabled", "false"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccGitRepository_disableOnDestroy(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	tfRepoNode := "azuredevops_git_repository.test"
+
+	var repoID, projectID string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testutils.PreCheck(t, nil) },
+		Providers: testutils.GetProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: hclGitRepositoryDisableOnDestroy(projectName, gitRepoName),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "disable_on_destroy", "true"),
+					func(s *terraform.State) error {
+						res, ok := s.RootModule().Resources[tfRepoNode]
+						if !ok {
+							return fmt.Errorf("Did not find a repo definition in the TF state")
+						}
+						repoID = res.Primary.ID
+						projectID = res.Primary.Attributes["project_id"]
+						return nil
+					},
+				),
+			},
+			{
+				Config: hclGitRepositoryDisableOnDestroyProjectOnly(projectName),
+				Check: func(s *terraform.State) error {
+					clients := testutils.GetProvider().Meta().(*client.AggregatedClient)
+					return retry.RetryContext(clients.Ctx, 1*time.Minute, func() *retry.RetryError {
+						repo, err := readGitRepo(clients, repoID, projectID)
+						if err != nil {
+							return retry.NonRetryableError(fmt.Errorf("repository with ID %s should still exist after destroy: %v", repoID, err))
+						}
+						if repo == nil || repo.IsDisabled == nil || !*repo.IsDisabled {
+							return retry.RetryableError(fmt.Errorf("repository with ID %s should be disabled after destroy", repoID))
+						}
+						return nil
+					})
+				},
 			},
 		},
 	})
@@ -224,7 +273,7 @@ func TestAccGitRepository_import_by_name(t *testing.T) {
 				ResourceName:            tfRepoNode,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"initialization"},
+				ImportStateVerifyIgnore: []string{"initialization", "disable_on_destroy"},
 				ImportStateId:           fmt.Sprintf("%s/%s", projectName, gitRepoName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
@@ -524,6 +573,31 @@ resource "azuredevops_git_repository" "test" {
   }
 }
 `, projectName, repoName, disabled)
+}
+
+func hclGitRepositoryDisableOnDestroy(projectName, repoName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id         = azuredevops_project.test.id
+  name               = "%s"
+  disable_on_destroy = true
+  initialization {
+    init_type = "Clean"
+  }
+}
+`, projectName, repoName)
+}
+
+func hclGitRepositoryDisableOnDestroyProjectOnly(projectName string) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+`, projectName)
 }
 
 func hclGitRepositoryIncorrectInitialization(projectName, repoName string) string {
