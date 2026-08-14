@@ -55,6 +55,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_project_permissions",
 		"azuredevops_project_pipeline_settings",
 		"azuredevops_project_tags",
+		"azuredevops_release_definition",
 		"azuredevops_repository_policy_author_email_pattern",
 		"azuredevops_repository_policy_case_enforcement",
 		"azuredevops_repository_policy_check_credentials",
