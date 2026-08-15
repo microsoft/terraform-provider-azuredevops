@@ -58,9 +58,8 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 		&externalTfsTestServiceEndpoint,
 	)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointExternalTFS(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointExternalTFS(resourceData)
 
-	require.Nil(t, err)
 	require.Equal(t, externalTfsTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, externalTfsTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 }
