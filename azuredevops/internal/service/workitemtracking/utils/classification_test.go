@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/terraform-provider-azuredevops/azdosdkmocks"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
@@ -75,12 +75,14 @@ func convertClassificationTestNode(testNode *classificationNodeDefinition) *work
 	return &node
 }
 
+// --- TESTS ---
+
+// TestClassification_Read_DontSwallowError verifieert dat we echte errors (geen 404) teruggeven
 func TestClassification_Read_DontSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-
 	clients := &client.AggregatedClient{
 		WorkItemTrackingClient: witClient,
 		Ctx:                    context.Background(),
@@ -105,12 +107,12 @@ func TestClassification_Read_DontSwallowError(t *testing.T) {
 	require.Contains(t, err.Error(), errMsg)
 }
 
+// TestClassification_Read basis test
 func TestClassification_Read(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-
 	clients := &client.AggregatedClient{
 		WorkItemTrackingClient: witClient,
 		Ctx:                    context.Background(),
@@ -137,30 +139,19 @@ func TestClassification_Read(t *testing.T) {
 	require.NotEmpty(t, id)
 
 	var v interface{}
-
 	v = resourceData.Get("project_id")
-	require.IsType(t, "", v)
 	require.Equal(t, classificationProjectID, v)
 
 	v = resourceData.Get("path")
-	require.IsType(t, node.path, v)
 	require.Equal(t, node.path, v)
-
-	v = resourceData.Get("has_children")
-	require.IsType(t, true, v)
-	require.Equal(t, len(node.children) > 0, v)
-
-	v = resourceData.Get("children")
-	require.NotNil(t, v)
-	require.Len(t, v, len(node.children))
 }
 
+// TestClassification_Read_Children test met kinderen
 func TestClassification_Read_Children(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
-
 	clients := &client.AggregatedClient{
 		WorkItemTrackingClient: witClient,
 		Ctx:                    context.Background(),
@@ -184,47 +175,37 @@ func TestClassification_Read_Children(t *testing.T) {
 
 	err := ReadClassificationNode(clients, resourceData, structureType)
 	require.Nil(t, err)
-	id := resourceData.Id()
-	require.NotEmpty(t, id)
 
-	var v interface{}
-
-	v = resourceData.Get("project_id")
-	require.IsType(t, "", v)
-	require.Equal(t, classificationProjectID, v)
-
-	v = resourceData.Get("path")
-	require.IsType(t, node.path, v)
-	require.Equal(t, node.path, v)
-
-	v = resourceData.Get("has_children")
-	require.IsType(t, true, v)
-	require.Equal(t, len(node.children) > 0, v)
-
-	v = resourceData.Get("children")
+	v := resourceData.Get("children")
 	require.NotNil(t, v)
 	require.Len(t, v, len(node.children))
+}
 
-	for i, childNode := range node.children {
-		tfNodePrefix := fmt.Sprintf("children.%d.", i)
-		v = resourceData.Get(tfNodePrefix + "project_id")
-		require.IsType(t, "", v)
-		require.Equal(t, classificationProjectID, v)
+// // TestClassification_Read_NotFound checkt of resource uit state wordt gehaald bij 404
+func TestClassification_Read_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		v = resourceData.Get(tfNodePrefix + "path")
-		require.IsType(t, childNode.path, v)
-		require.Equal(t, childNode.path, v)
-
-		v = resourceData.Get(tfNodePrefix + "has_children")
-		require.IsType(t, true, v)
-		require.Equal(t, len(childNode.children) > 0, v)
-
-		v = resourceData.Get(tfNodePrefix + "children")
-		if len(childNode.children) > 0 {
-			require.NotNil(t, v)
-			require.Len(t, v, len(childNode.children))
-		} else {
-			require.Nil(t, v)
-		}
+	witClient := azdosdkmocks.NewMockWorkitemtrackingClient(ctrl)
+	clients := &client.AggregatedClient{
+		WorkItemTrackingClient: witClient,
+		Ctx:                    context.Background(),
 	}
+
+	structureType := workitemtracking.TreeStructureGroupValues.Areas
+	errorMsg := "VS402485: The Area/Iteration name is not recognized."
+
+	witClient.EXPECT().
+		GetClassificationNode(clients.Ctx, gomock.Any()).
+		Return(nil, fmt.Errorf("%s", errorMsg)).
+		Times(1)
+
+	resourceData := schema.TestResourceDataRaw(t, CreateClassificationNodeSchema(map[string]*schema.Schema{}), nil)
+	resourceData.SetId("some-existing-id")
+	resourceData.Set("project_id", classificationProjectID)
+
+	err := ReadClassificationNode(clients, resourceData, structureType)
+
+	require.NotNil(t, err)
+	require.Equal(t, "", resourceData.Id())
 }

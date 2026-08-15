@@ -98,6 +98,7 @@ func ReadClassificationNode(clients *client.AggregatedClient, d *schema.Resource
 		// the following error will be returned in case the classification node isn't present
 		// "VS402485: The Area/Iteration name is not recognized"
 		d.SetId("")
+
 		js, parseErr := json.Marshal(params)
 		if parseErr != nil {
 			return fmt.Errorf("Marshalling JSON. Error: %+v", parseErr)
