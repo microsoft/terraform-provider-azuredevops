@@ -264,6 +264,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 		SecurityClient:                securityClient,
 		IdentityClient:                identityClient,
 		WikiClient:                    wikiClient,
+		WorkClient:                    workClient,
 		WorkItemTrackingClient:        workitemtrackingClient,
 		WorkItemTrackingProcessClient: workitemtrackingprocessClient,
 		ServiceHooksClient:            serviceHooksClient,
