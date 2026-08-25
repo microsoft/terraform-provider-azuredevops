@@ -47,6 +47,39 @@ resource "azuredevops_serviceendpoint_azurerm" "example" {
 }
 ```
 
+### Service Principal Manual AzureRM Service Endpoint (Write-Only Secret)
+
+~> **Note:** Write-only attributes require Terraform 1.11 or later.
+
+```hcl
+resource "azuredevops_project" "example" {
+  name               = "Example Project"
+  visibility         = "private"
+  version_control    = "Git"
+  work_item_template = "Agile"
+  description        = "Managed by Terraform"
+}
+
+ephemeral "azuread_application_password" "example" {
+  application_id = "/applications/00000000-0000-0000-0000-000000000000"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "example" {
+  project_id                             = azuredevops_project.example.id
+  service_endpoint_name                  = "Example AzureRM"
+  description                            = "Managed by Terraform"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
+  credentials {
+    serviceprincipalid             = "00000000-0000-0000-0000-000000000000"
+    serviceprincipalkey_wo         = ephemeral.azuread_application_password.example.value
+    serviceprincipalkey_wo_version = 1
+  }
+  azurerm_spn_tenantid      = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name = "Example Subscription Name"
+}
+```
+
 ### Service Principal Manual AzureRM Service Endpoint (ManagementGroup Scoped)
 
 ```hcl
@@ -239,9 +272,15 @@ A `credentials` block supports the following:
 
 * `serviceprincipalid` - (Required) The service principal application ID
 
-* `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
+* `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. Conflicts with `serviceprincipalkey_wo` and `serviceprincipalcertificate`.
 
-* `serviceprincipalcertificate` - (Optional) The service principal certificate. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`.
+* `serviceprincipalkey_wo` - (Optional, Write-Only) The service principal secret. Conflicts with `serviceprincipalkey` and `serviceprincipalcertificate`. This is a write-only attribute, which allows ephemeral resources to be used and is never persisted to state. Requires `serviceprincipalkey_wo_version`.
+
+* `serviceprincipalkey_wo_version` - (Optional) An integer value used to trigger an update for `serviceprincipalkey_wo`. This property should be incremented when updating `serviceprincipalkey_wo`. Requires `serviceprincipalkey_wo`.
+
+~> **Note:** Because `serviceprincipalkey_wo` is never written to state, Terraform cannot detect changes to its value on its own. `serviceprincipalkey_wo_version` must be incremented whenever the secret is rotated, otherwise the new value will not be sent to Azure DevOps.
+
+* `serviceprincipalcertificate` - (Optional) The service principal certificate. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. Conflicts with `serviceprincipalkey` and `serviceprincipalkey_wo`.
 
 ---
 
