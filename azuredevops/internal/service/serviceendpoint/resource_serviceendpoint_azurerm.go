@@ -111,11 +111,11 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 						Type:      schema.TypeString,
 						Optional:  true,
 						WriteOnly: true,
+						Sensitive: true,
 						ConflictsWith: []string{
 							"credentials.0.serviceprincipalkey",
 							"credentials.0.serviceprincipalcertificate",
 						},
-						RequiredWith: []string{"credentials.0.serviceprincipalkey_wo_version"},
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					"serviceprincipalkey_wo_version": {

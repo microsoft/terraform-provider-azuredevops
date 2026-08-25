@@ -274,11 +274,11 @@ A `credentials` block supports the following:
 
 * `serviceprincipalkey` - (Optional) The service principal secret. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. Conflicts with `serviceprincipalkey_wo` and `serviceprincipalcertificate`.
 
-* `serviceprincipalkey_wo` - (Optional, Write-Only) The service principal secret. Conflicts with `serviceprincipalkey` and `serviceprincipalcertificate`. This is a write-only attribute, which allows ephemeral resources to be used and is never persisted to state. Requires `serviceprincipalkey_wo_version`.
+* `serviceprincipalkey_wo` - (Optional, Write-Only) The service principal secret. Conflicts with `serviceprincipalkey` and `serviceprincipalcertificate`. This is a write-only attribute, which allows ephemeral resources to be used and is never persisted to state.
 
-* `serviceprincipalkey_wo_version` - (Optional) An integer value used to trigger an update for `serviceprincipalkey_wo`. This property should be incremented when updating `serviceprincipalkey_wo`. Requires `serviceprincipalkey_wo`.
+* `serviceprincipalkey_wo_version` - (Optional) An integer value used to trigger an update for `serviceprincipalkey_wo`. This property should be set or incremented when updating `serviceprincipalkey_wo`. Requires `serviceprincipalkey_wo`.
 
-~> **Note:** Because `serviceprincipalkey_wo` is never written to state, Terraform cannot detect changes to its value on its own. `serviceprincipalkey_wo_version` must be incremented whenever the secret is rotated, otherwise the new value will not be sent to Azure DevOps.
+~> **Note:** Because `serviceprincipalkey_wo` is never written to state, Terraform cannot detect changes to its value on its own. To roll out a rotated secret, set `serviceprincipalkey_wo_version` (or increment it if it is already set), otherwise the new value will not be sent to Azure DevOps.
 
 * `serviceprincipalcertificate` - (Optional) The service principal certificate. This not required if `service_endpoint_authentication_scheme` is set to `WorkloadIdentityFederation`. Conflicts with `serviceprincipalkey` and `serviceprincipalkey_wo`.
 
