@@ -381,6 +381,50 @@ func TestAccServiceEndpointAzureRm_azureStack(t *testing.T) {
 	})
 }
 
+func TestAccServiceEndpointAzureRm_writeOnlyServicePrincipalKey(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceprincipalid := uuid.New().String()
+	serviceprincipalkeyFirst := uuid.New().String()
+	serviceprincipalkeySecond := uuid.New().String()
+
+	tfNode := "azuredevops_serviceendpoint_azurerm.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed("azuredevops_serviceendpoint_azurerm"),
+		Steps: []resource.TestStep{
+			{
+				Config: hclAzureRMServiceEndpointWriteOnlyServicePrincipalKey(projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkeyFirst, 1),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfNode, serviceEndpointName),
+					resource.TestCheckResourceAttrSet(tfNode, "project_id"),
+					resource.TestCheckResourceAttr(tfNode, "service_endpoint_name", serviceEndpointName),
+					resource.TestCheckResourceAttr(tfNode, "credentials.0.serviceprincipalid", serviceprincipalid),
+					resource.TestCheckResourceAttr(tfNode, "credentials.0.serviceprincipalkey_wo_version", "1"),
+					resource.TestCheckNoResourceAttr(tfNode, "credentials.0.serviceprincipalkey_wo"),
+				),
+			},
+			{
+				Config: hclAzureRMServiceEndpointWriteOnlyServicePrincipalKey(projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkeySecond, 2),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfNode, serviceEndpointName),
+					resource.TestCheckResourceAttr(tfNode, "credentials.0.serviceprincipalid", serviceprincipalid),
+					resource.TestCheckResourceAttr(tfNode, "credentials.0.serviceprincipalkey_wo_version", "2"),
+					resource.TestCheckNoResourceAttr(tfNode, "credentials.0.serviceprincipalkey_wo"),
+				),
+			},
+			{
+				ResourceName:            tfNode,
+				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfNode),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"credentials.0.serviceprincipalkey_wo_version"},
+			},
+		},
+	})
+}
+
 func hclAzureRMServiceEndpointEnvironmentAzureStack(projectName, serviceEndpointName string) string {
 	return fmt.Sprintf(`
 resource "azuredevops_project" "test" {
@@ -401,4 +445,26 @@ resource "azuredevops_serviceendpoint_azurerm" "test" {
   }
 }
 `, projectName, serviceEndpointName)
+}
+
+func hclAzureRMServiceEndpointWriteOnlyServicePrincipalKey(projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkey string, serviceprincipalkeyVersion int) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_serviceendpoint_azurerm" "test" {
+  project_id                             = azuredevops_project.test.id
+  service_endpoint_name                  = "%s"
+  azurerm_spn_tenantid                   = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_id                = "00000000-0000-0000-0000-000000000000"
+  azurerm_subscription_name              = "Test Sub"
+  service_endpoint_authentication_scheme = "ServicePrincipal"
+  credentials {
+    serviceprincipalid             = "%s"
+    serviceprincipalkey_wo         = "%s"
+    serviceprincipalkey_wo_version = %d
+  }
+}
+`, projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkey, serviceprincipalkeyVersion)
 }

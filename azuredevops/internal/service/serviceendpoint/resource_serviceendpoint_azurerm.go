@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/serviceendpoint"
@@ -97,18 +98,40 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 						Description: "The service principal id which should be used.",
 					},
 					"serviceprincipalkey": {
-						Type:          schema.TypeString,
-						Optional:      true,
-						ConflictsWith: []string{"credentials.0.serviceprincipalcertificate"},
-						Sensitive:     true,
-						ValidateFunc:  validation.StringIsNotEmpty,
+						Type:     schema.TypeString,
+						Optional: true,
+						ConflictsWith: []string{
+							"credentials.0.serviceprincipalcertificate",
+							"credentials.0.serviceprincipalkey_wo",
+						},
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
+					"serviceprincipalkey_wo": {
+						Type:      schema.TypeString,
+						Optional:  true,
+						WriteOnly: true,
+						Sensitive: true,
+						ConflictsWith: []string{
+							"credentials.0.serviceprincipalkey",
+							"credentials.0.serviceprincipalcertificate",
+						},
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
+					"serviceprincipalkey_wo_version": {
+						Type:         schema.TypeInt,
+						Optional:     true,
+						RequiredWith: []string{"credentials.0.serviceprincipalkey_wo"},
 					},
 					"serviceprincipalcertificate": {
-						Type:          schema.TypeString,
-						Optional:      true,
-						ConflictsWith: []string{"credentials.0.serviceprincipalkey"},
-						Sensitive:     true,
-						ValidateFunc:  validation.StringIsNotEmpty,
+						Type:     schema.TypeString,
+						Optional: true,
+						ConflictsWith: []string{
+							"credentials.0.serviceprincipalkey",
+							"credentials.0.serviceprincipalkey_wo",
+						},
+						Sensitive:    true,
+						ValidateFunc: validation.StringIsNotEmpty,
 					},
 				},
 			},
@@ -362,7 +385,15 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 				Scheme: converter.String(string(serviceEndPointAuthenticationScheme)),
 			}
 
-			if spnKey := credentials["serviceprincipalkey"].(string); spnKey != "" {
+			spnKey := credentials["serviceprincipalkey"].(string)
+			if spnKey == "" {
+				woSpnKey, err := writeOnlyServicePrincipalKey(d)
+				if err != nil {
+					return nil, err
+				}
+				spnKey = woSpnKey
+			}
+			if spnKey != "" {
 				(*serviceEndpoint.Authorization.Parameters)["authenticationType"] = "spnKey"
 				(*serviceEndpoint.Authorization.Parameters)["serviceprincipalkey"] = spnKey
 			}
@@ -456,6 +487,22 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 	serviceEndpoint.Type = converter.String("azurerm")
 	serviceEndpoint.Url = converter.String(endpointUrl)
 	return serviceEndpoint, nil
+}
+
+func writeOnlyServicePrincipalKey(d *schema.ResourceData) (string, error) {
+	if d.GetRawConfig().IsNull() {
+		return "", nil
+	}
+
+	value, diags := d.GetRawConfigAt(cty.GetAttrPath("credentials").IndexInt(0).GetAttr("serviceprincipalkey_wo"))
+	if diags.HasError() {
+		return "", fmt.Errorf("retrieving `credentials.0.serviceprincipalkey_wo`: %+v", diags)
+	}
+	if value.IsNull() {
+		return "", nil
+	}
+
+	return value.AsString(), nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
