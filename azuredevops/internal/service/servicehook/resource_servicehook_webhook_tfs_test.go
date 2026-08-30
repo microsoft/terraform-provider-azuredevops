@@ -20,13 +20,17 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var subscriptionWebhookID = uuid.New()
-var createdByID = uuid.New()
-var modifiedByID = uuid.New()
-var subscriberID = uuid.New()
+var (
+	subscriptionWebhookID = uuid.New()
+	createdByID           = uuid.New()
+	modifiedByID          = uuid.New()
+	subscriberID          = uuid.New()
+)
 
-var enabledStatus = servicehooks.SubscriptionStatus("enabled")
-var onProbationStatus = servicehooks.SubscriptionStatus("onProbation")
+var (
+	enabledStatus     = servicehooks.SubscriptionStatus("enabled")
+	onProbationStatus = servicehooks.SubscriptionStatus("onProbation")
+)
 
 var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 	{
