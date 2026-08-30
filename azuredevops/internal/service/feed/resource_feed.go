@@ -11,6 +11,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/feed"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/webapi"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
+	feedUtils "github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/feed/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
@@ -64,6 +65,17 @@ func ResourceFeed() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 			},
+			"upstream_sources": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: feedUtils.ResourceUpstreamSourceSchema(),
+				},
+			},
+			"upstream_enabled": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"features": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -91,7 +103,7 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
-	features := expandFeedFeatures(d.Get("features").([]interface{}))
+	features := feedUtils.ExpandFeedFeatures(d.Get("features").([]interface{}))
 
 	if v, ok := features["restore"]; ok && v.(bool) {
 		if isFeedRestorable(d, m) {
@@ -103,12 +115,20 @@ func resourceFeedCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	feedDetail, err := clients.FeedClient.CreateFeed(clients.Ctx, feed.CreateFeedArgs{
+	args := feed.CreateFeedArgs{
 		Feed: &feed.Feed{
 			Name: &name,
 		},
 		Project: &projectId,
-	})
+	}
+
+	if v, ok := d.GetOk("upstream_sources"); ok {
+		args.Feed.UpstreamSources = feedUtils.ExpandUpstreamSources(v.([]interface{}))
+		enabled := true
+		args.Feed.UpstreamEnabled = &enabled
+	}
+
+	feedDetail, err := clients.FeedClient.CreateFeed(clients.Ctx, args)
 	if err != nil {
 		return fmt.Errorf("creating new feed. Name: %s, Error: %+v", name, err)
 	}
@@ -140,6 +160,12 @@ func resourceFeedRead(d *schema.ResourceData, m interface{}) error {
 		if feedDetail.Project != nil {
 			d.Set("project_id", feedDetail.Project.Id.String())
 		}
+		if feedDetail.UpstreamEnabled != nil {
+			d.Set("upstream_enabled", *feedDetail.UpstreamEnabled)
+		}
+		if feedDetail.UpstreamSources != nil {
+			d.Set("upstream_sources", feedUtils.FlattenUpstreamSources(*feedDetail.UpstreamSources))
+		}
 	}
 
 	return nil
@@ -150,11 +176,21 @@ func resourceFeedUpdate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
 
-	_, err := clients.FeedClient.UpdateFeed(clients.Ctx, feed.UpdateFeedArgs{
+	updateArgs := feed.UpdateFeedArgs{
 		Feed:    &feed.FeedUpdate{},
 		FeedId:  &name,
 		Project: &projectId,
-	})
+	}
+
+	if d.HasChange("upstream_sources") {
+		v := d.Get("upstream_sources").([]any)
+		updateArgs.Feed.UpstreamSources = feedUtils.ExpandUpstreamSources(v)
+
+		enabled := len(v) > 0
+		updateArgs.Feed.UpstreamEnabled = &enabled
+	}
+
+	_, err := clients.FeedClient.UpdateFeed(clients.Ctx, updateArgs)
 	if err != nil {
 		return err
 	}
@@ -166,7 +202,7 @@ func resourceFeedDelete(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	name := d.Get("name").(string)
 	projectId := d.Get("project_id").(string)
-	features := expandFeedFeatures(d.Get("features").([]interface{}))
+	features := feedUtils.ExpandFeedFeatures(d.Get("features").([]interface{}))
 
 	err := clients.FeedClient.DeleteFeed(clients.Ctx, feed.DeleteFeedArgs{
 		FeedId:  &name,
@@ -219,11 +255,4 @@ func restoreFeed(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
-}
-
-func expandFeedFeatures(input []interface{}) map[string]interface{} {
-	if len(input) == 0 || input[0] == nil {
-		return map[string]interface{}{}
-	}
-	return input[0].(map[string]interface{})
 }

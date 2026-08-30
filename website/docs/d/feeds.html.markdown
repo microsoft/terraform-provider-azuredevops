@@ -1,60 +1,50 @@
 ---
 layout: "azuredevops"
-page_title: "AzureDevops: azuredevops_feed"
+page_title: "AzureDevops: Data Source: azuredevops_feeds"
 description: |-
-  Use this data source to access information about existing Feed within a given project in Azure DevOps.
+  Gets information about an existing Feeds.
 ---
 
-# Data Source: azuredevops_feed
+# Data Source: azuredevops_feeds
 
-Use this data source to access information about existing Feed within a given project in Azure DevOps.
+Use this data source to access information about an existing Feeds.
 
 ## Example Usage
 
-### Basic Example
 ```hcl
-data "azuredevops_feed" "example" {
-  name = "releases"
+data "azuredevops_feeds" "example" {
+
+}
+
+output "id" {
+  value = data.azuredevops_feeds.example.id
 }
 ```
 
-### Access feed within a project
-```hcl
-data "azuredevops_project" "example" {
-  name = "Example Project"
-}
-
-data "azuredevops_feed" "example" {
-  name       = "releases"
-  project_id = data.azuredevops_project.example.id
-}
-```
-
-
-## Argument Reference
+## Arguments Reference
 
 The following arguments are supported:
 
-* `name` - (Required) The Name of the Feed.
-
-* `feed_id` - (Required) The ID of the Feed.
-
-~> **Note** Only one of `name` or `feed_id` can be set at the same time.
-
----
-
-* `project_id` - (Optional) ID of the Project Feed is created in.
+* `project_id` - (Optional) The ID of the project.
 
 ## Attributes Reference
 
 In addition to the Arguments listed above - the following Attributes are exported:
 
+* `id` - The ID of the Feeds.
+
+* `feeds` - A `feeds` block as defined below.
+
+---
+
+A `feeds` block exports the following:
 
 * `badges_enabled` - If set, this feed supports generation of package badges.
 * `description` - A description for the feed. Descriptions must not exceed 255 characters.
 * `hide_deleted_package_versions` - If set, the feed will hide all deleted/unpublished versions
 * `upstream_enabled` - This should always be true. Setting to false will override all sources in UpstreamSources.
 * `upstream_sources` - A list of sources that this feed will fetch packages from. An empty list indicates that this feed will not search any additional sources for packages.
+
 
 ---
 
@@ -74,4 +64,4 @@ A `upstream_sources` block supports the following:
 
 The `timeouts` block allows you to specify [timeouts](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts) for certain actions:
 
-* `read` - (Defaults to 5 minutes) Used when retrieving the Feed.
+* `read` - (Defaults to 5 minutes) Used when retrieving the Feeds.
