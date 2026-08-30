@@ -85,6 +85,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project":                                     core.ResourceProject(),
 			"azuredevops_project_features":                            core.ResourceProjectFeatures(),
 			"azuredevops_project_permissions":                         permissions.ResourceProjectPermissions(),
+			"azuredevops_project_pipeline_retention_settings":         build.ResourceProjectPipelineRetentionSettings(),
 			"azuredevops_project_pipeline_settings":                   core.ResourceProjectPipelineSettings(),
 			"azuredevops_project_tags":                                core.ResourceProjectTag(),
 			"azuredevops_repository_policy_author_email_pattern":      repository.ResourceRepositoryPolicyAuthorEmailPatterns(),
