@@ -28,6 +28,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/permissions"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/branch"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/policy/repository"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/release"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/security"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/securityroles"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/service/serviceendpoint"
@@ -87,6 +88,7 @@ func Provider() *schema.Provider {
 			"azuredevops_project_permissions":                         permissions.ResourceProjectPermissions(),
 			"azuredevops_project_pipeline_settings":                   core.ResourceProjectPipelineSettings(),
 			"azuredevops_project_tags":                                core.ResourceProjectTag(),
+			"azuredevops_release_definition":                          release.ResourceReleaseDefinition(),
 			"azuredevops_repository_policy_author_email_pattern":      repository.ResourceRepositoryPolicyAuthorEmailPatterns(),
 			"azuredevops_repository_policy_case_enforcement":          repository.ResourceRepositoryEnforceConsistentCase(),
 			"azuredevops_repository_policy_check_credentials":         repository.ResourceRepositoryPolicyCheckCredentials(),
