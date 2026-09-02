@@ -46,6 +46,7 @@ func Provider() *schema.Provider {
 			"azuredevops_agent_queue":                                 taskagent.ResourceAgentQueue(),
 			"azuredevops_area":                                        workitemtracking.ResourceArea(),
 			"azuredevops_area_permissions":                            permissions.ResourceAreaPermissions(),
+			"azuredevops_area_tree":                                   workitemtracking.ResourceAreaTree(),
 			"azuredevops_branch_policy_auto_reviewers":                branch.ResourceBranchPolicyAutoReviewers(),
 			"azuredevops_branch_policy_build_validation":              branch.ResourceBranchPolicyBuildValidation(),
 			"azuredevops_branch_policy_comment_resolution":            branch.ResourceBranchPolicyCommentResolution(),
