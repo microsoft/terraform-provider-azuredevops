@@ -115,22 +115,35 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *serviceendpoint.ServiceEndpoint, timeout time.Duration) error {
 	projectID := (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id
 
-	if err := retry.RetryContext(clients.Ctx, timeout, func() *retry.RetryError {
-		err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
-			clients.Ctx,
-			serviceendpoint.DeleteServiceEndpointArgs{
-				ProjectIds: &[]string{
-					projectID.String(),
+	attempts := 0
+	deleteConf := &retry.StateChangeConf{
+		Pending:      []string{"Retrying"},
+		Target:       []string{"Deleted"},
+		PollInterval: 5 * time.Second,
+		Timeout:      timeout,
+		Refresh: func() (interface{}, string, error) {
+			attempts++
+			err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+				clients.Ctx,
+				serviceendpoint.DeleteServiceEndpointArgs{
+					ProjectIds: &[]string{
+						projectID.String(),
+					},
+					EndpointId: serviceEndpoint.Id,
 				},
-				EndpointId: serviceEndpoint.Id,
-			},
-		)
-		if err != nil {
-			log.Printf(":: %s :: delete failed, retrying. %v", serviceEndpoint.Id, err)
-			return retry.RetryableError(err)
-		}
-		return nil
-	}); err != nil {
+			)
+			if err != nil {
+				if attempts >= 3 {
+					return nil, "", err
+				}
+				log.Printf(":: %s :: delete failed on attempt %d of 3, retrying. %v", serviceEndpoint.Id, attempts, err)
+				return serviceEndpoint, "Retrying", nil
+			}
+			return serviceEndpoint, "Deleted", nil
+		},
+	}
+
+	if _, err := deleteConf.WaitForStateContext(clients.Ctx); err != nil {
 		return fmt.Errorf("Delete service endpoint error %v", err)
 	}
 
