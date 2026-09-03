@@ -193,6 +193,11 @@ func ResourceGitRepository() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"set_auto_complete": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 			initDataOld, initDataNew := d.GetChange("initialization")
@@ -307,6 +312,13 @@ func resourceGitRepositoryCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	if v, ok := d.GetOk("set_auto_complete"); ok && v.(bool) {
+		_, err = updateGitRepositoryWithAutoComplete(clients, createdRepo.Id.String(), projectID.String(), true)
+		if err != nil {
+			return fmt.Errorf("setting auto-complete on created repository in Azure DevOps: %+v", err)
+		}
+	}
+
 	return resourceGitRepositoryRead(d, m)
 }
 
@@ -398,6 +410,14 @@ func resourceGitRepositoryUpdate(d *schema.ResourceData, m interface{}) error {
 		_, err = updateIsDisabledGitRepository(clients, repo.Id.String(), projectID.String(), disabled)
 		if err != nil {
 			return fmt.Errorf("Disabling repository in Azure DevOps: %+v", err)
+		}
+	}
+
+	if d.HasChange("set_auto_complete") {
+		setAutoComplete := d.Get("set_auto_complete").(bool)
+		_, err = updateGitRepositoryWithAutoComplete(clients, repo.Id.String(), projectID.String(), setAutoComplete)
+		if err != nil {
+			return fmt.Errorf("updating auto-complete on repository : %+v", err)
 		}
 	}
 
@@ -573,6 +593,20 @@ func flattenGitRepository(d *schema.ResourceData, repository *git.GitRepository)
 	d.Set("url", repository.Url)
 	d.Set("web_url", repository.WebUrl)
 	d.Set("disabled", repository.IsDisabled)
+
+	if repository.Links != nil {
+		if links, ok := repository.Links.(map[string]interface{}); ok {
+			setAutoComplete := false
+			// The property name "setAutoComplete" is based on the REST API documentation
+			if prop, ok := links["setAutoComplete"]; ok {
+				if val, ok := prop.(bool); ok {
+					setAutoComplete = val
+				}
+			}
+			d.Set("set_auto_complete", setAutoComplete)
+		}
+	}
+
 	return nil
 }
 
@@ -645,6 +679,35 @@ func updateIsDisabledGitRepository(clients *client.AggregatedClient, repoID stri
 	}
 
 	return repo, nil
+}
+
+func updateGitRepositoryWithAutoComplete(clients *client.AggregatedClient, repoID string, projectID string, setAutoComplete bool) (*git.GitRepository, error) {
+	uuid, err := uuid.Parse(repoID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid repositoryId UUID: %s", repoID)
+	}
+
+	// We use a custom update call because we need to pass a property that is not in the SDK struct.
+	// Based on the release notes and standard Azure DevOps patterns, this is likely a property
+	// in the request body.
+	repo := &git.GitRepository{
+		Links: map[string]interface{}{
+			"setAutoComplete": setAutoComplete,
+		},
+	}
+
+	updatedRepo, err := clients.GitReposClient.UpdateRepository(
+		clients.Ctx,
+		git.UpdateRepositoryArgs{
+			NewRepositoryInfo: repo,
+			RepositoryId:      &uuid,
+			Project:           converter.String(projectID),
+		})
+	if err != nil {
+		return nil, fmt.Errorf("updating set_auto_complete on repository : %+v", err)
+	}
+
+	return updatedRepo, nil
 }
 
 func initializeRepository(clients *client.AggregatedClient, initialization *repoInitializationMeta, repository *git.GitRepository, projectId string) error {

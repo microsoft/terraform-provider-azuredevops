@@ -161,6 +161,38 @@ func TestAccGitRepository_disabledCannotUpdate(t *testing.T) {
 	})
 }
 
+func TestAccGitRepository_autoComplete(t *testing.T) {
+	projectName := testutils.GenerateResourceName()
+	gitRepoName := testutils.GenerateResourceName()
+	tfRepoNode := "azuredevops_git_repository.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkGitRepoDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclGitRepositoryAutoComplete(projectName, gitRepoName, true),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "set_auto_complete", "true"),
+				),
+			},
+			{
+				Config: hclGitRepositoryAutoComplete(projectName, gitRepoName, false),
+				Check: resource.ComposeTestCheckFunc(
+					checkGitRepoExists(gitRepoName),
+					resource.TestCheckResourceAttrSet(tfRepoNode, "project_id"),
+					resource.TestCheckResourceAttr(tfRepoNode, "name", gitRepoName),
+					resource.TestCheckResourceAttr(tfRepoNode, "set_auto_complete", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccGitRepository_incorrectInitialization(t *testing.T) {
 	projectName := testutils.GenerateResourceName()
 	gitRepoName := testutils.GenerateResourceName()
@@ -613,4 +645,21 @@ resource "azuredevops_git_repository" "import" {
   }
 }
 `, repoInit, importRepoName, os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_USERNAME"), os.Getenv("AZDO_GENERIC_GIT_SERVICE_CONNECTION_PASSWORD"))
+}
+
+func hclGitRepositoryAutoComplete(projectName, repoName string, autoComplete bool) string {
+	return fmt.Sprintf(`
+resource "azuredevops_project" "test" {
+  name = "%s"
+}
+
+resource "azuredevops_git_repository" "test" {
+  project_id        = azuredevops_project.test.id
+  name              = "%s"
+  set_auto_complete = %t
+  initialization {
+    init_type = "Clean"
+  }
+}
+`, projectName, repoName, autoComplete)
 }
