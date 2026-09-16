@@ -63,6 +63,17 @@ func baseSchema() map[string]*schema.Schema {
 	}
 }
 
+// These are variables rather than constants so that unit tests, which drive a mocked
+// client, do not have to wait for a back-off that can never shorten. The values used
+// in production are unchanged.
+var (
+	// stateChangeDelay is how long to wait before polling an asynchronous create or
+	// delete for the first time.
+	stateChangeDelay = 10 * time.Second
+	// deleteRetryInterval is the back-off applied between two delete attempts.
+	deleteRetryInterval = 5 * time.Second
+)
+
 func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
 	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) == 0 {
 		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
@@ -82,7 +93,7 @@ func createServiceEndpoint(d *schema.ResourceData, clients *client.AggregatedCli
 
 	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
-		Delay:                     10 * time.Second,
+		Delay:                     stateChangeDelay,
 		MinTimeout:                10 * time.Second,
 		Pending:                   []string{opState.InProgress},
 		Target:                    []string{opState.Ready, opState.Failed},
@@ -112,11 +123,6 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	return updatedServiceEndpoint, err
 }
 
-// deleteRetryInterval is the back-off applied between two delete attempts. It is a
-// variable rather than a constant so that unit tests, which drive a mocked client, do
-// not have to wait for the real back-off.
-var deleteRetryInterval = 5 * time.Second
-
 func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *serviceendpoint.ServiceEndpoint, timeout time.Duration) error {
 	projectID := (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id
 
@@ -144,7 +150,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 
 	stateConf := &retry.StateChangeConf{
 		ContinuousTargetOccurence: 1,
-		Delay:                     10 * time.Second,
+		Delay:                     stateChangeDelay,
 		MinTimeout:                10 * time.Second,
 		Pending:                   []string{opState.InProgress},
 		Target:                    []string{opState.Ready, opState.Failed},
