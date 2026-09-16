@@ -112,13 +112,15 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	return updatedServiceEndpoint, err
 }
 
+// deleteRetryInterval is the back-off applied between two delete attempts. It is a
+// variable rather than a constant so that unit tests, which drive a mocked client, do
+// not have to wait for the real back-off.
+var deleteRetryInterval = 5 * time.Second
+
 func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *serviceendpoint.ServiceEndpoint, timeout time.Duration) error {
 	projectID := (*serviceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id
 
-	const (
-		maxAttempts   = 3
-		retryInterval = 5 * time.Second
-	)
+	const maxAttempts = 3
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		err := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 			clients.Ctx,
@@ -134,7 +136,7 @@ func deleteServiceEndpoint(clients *client.AggregatedClient, serviceEndpoint *se
 		}
 		log.Printf("[DEBUG] Deleting service endpoint %s failed on attempt %d of %d, retrying. %v", serviceEndpoint.Id, attempt, maxAttempts, err)
 		if attempt < maxAttempts {
-			time.Sleep(retryInterval)
+			time.Sleep(deleteRetryInterval)
 		} else {
 			return fmt.Errorf("Delete service endpoint error %v", err)
 		}
