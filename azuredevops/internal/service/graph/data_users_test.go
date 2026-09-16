@@ -78,6 +78,14 @@ var usrList2 = []graph.GraphUser{
 	},
 }
 
+// copyUsers returns a fresh copy of a fixture. dataUsersReadContext filters the slice
+// it is handed in place, so a shared fixture would leak into the next test.
+func copyUsers(users []graph.GraphUser) *[]graph.GraphUser {
+	out := make([]graph.GraphUser, len(users))
+	copy(out, users)
+	return &out
+}
+
 // verfies that the data source propagates an error from the API correctly
 func TestDataSourceUser_Read_TestDoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -120,7 +128,7 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 			SubjectTypes: &[]string{},
 		}).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers:        &usrList1,
+			GraphUsers:        copyUsers(usrList1),
 			ContinuationToken: &[]string{"2"},
 		}, nil).
 		Times(1))
@@ -132,7 +140,7 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 			ContinuationToken: converter.String("2"),
 		}).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers:        &usrList2,
+			GraphUsers:        copyUsers(usrList2),
 			ContinuationToken: &[]string{""},
 		}, nil).
 		Times(1))
@@ -205,7 +213,7 @@ func TestDataSourceUser_Read_TestFilterByPricipalName(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -251,7 +259,7 @@ func TestDataSourceUser_Read_TestFilterByOrigin(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -307,7 +315,7 @@ func TestDataSourceUser_Read_TestFilterByOriginId(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -318,7 +326,7 @@ func TestDataSourceUser_Read_TestFilterByOriginId(t *testing.T) {
 			Links: "",
 			Value: &id,
 		}, nil).
-		Times(3)
+		Times(2)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin_id", "8c840d92-f19e-4dfe-8eab-5a1fd67a3a77")
@@ -363,7 +371,7 @@ func TestDataSourceUser_Read_TestFilterByOriginOriginId(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -374,7 +382,7 @@ func TestDataSourceUser_Read_TestFilterByOriginOriginId(t *testing.T) {
 			Links: "",
 			Value: &id,
 		}, nil).
-		Times(2)
+		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin", "aad")

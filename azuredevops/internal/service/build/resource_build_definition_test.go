@@ -577,23 +577,35 @@ func TestExpandVariables_CatchesDuplicateVariables(t *testing.T) {
 	require.Contains(t, err.Error(), "Unexpectedly found duplicate variable with name")
 }
 
+// sortBuildDefinition returns a copy of b whose trigger filters are sorted, so that a
+// definition can be compared regardless of filter order. The trigger maps are copied
+// rather than sorted in place: the package level fixtures share them, and rewriting
+// them would leak into whichever test runs next.
 func sortBuildDefinition(b build.BuildDefinition) build.BuildDefinition {
 	if b.Triggers == nil {
 		return b
 	}
+	triggers := make([]interface{}, 0, len(*b.Triggers))
 	for _, t := range *b.Triggers {
-		if m, ok := t.(map[string]interface{}); ok {
-			if m2, ok := m["branchFilters"].([]interface{}); ok {
-				bf := tfhelper.ExpandStringList(m2)
-				sort.Strings(bf)
-				m["branchFilters"] = bf
-			}
-			if m3, ok := m["pathFilters"].([]interface{}); ok {
-				pf := tfhelper.ExpandStringList(m3)
-				sort.Strings(pf)
-				m["pathFilters"] = pf
+		m, ok := t.(map[string]interface{})
+		if !ok {
+			triggers = append(triggers, t)
+			continue
+		}
+
+		sorted := make(map[string]interface{}, len(m))
+		for k, v := range m {
+			sorted[k] = v
+		}
+		for _, key := range []string{"branchFilters", "pathFilters"} {
+			if filters, ok := sorted[key].([]interface{}); ok {
+				list := tfhelper.ExpandStringList(filters)
+				sort.Strings(list)
+				sorted[key] = list
 			}
 		}
+		triggers = append(triggers, sorted)
 	}
+	b.Triggers = &triggers
 	return b
 }
