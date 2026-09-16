@@ -1468,7 +1468,10 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 		}
 	}
 
-	var buildTriggers []any
+	// NOTE: this must be a non-nil (possibly empty) slice so that the request body
+	// always carries `"triggers": []` rather than `"triggers": null` when the
+	// configuration declares no trigger.
+	buildTriggers := []any{}
 
 	ciTriggers, err := expandBuildDefinitionTriggerList(
 		d.Get("ci_trigger").([]interface{}),
