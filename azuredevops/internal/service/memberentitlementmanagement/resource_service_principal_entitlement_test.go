@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -481,6 +482,120 @@ func TestServicePrincipalEntitlement_Update_TestEmptyErrors(t *testing.T) {
 	err := resourceServicePrincipalEntitlementUpdate(resourceData, clients)
 	assert.NotNil(t, err, "err should not be nil")
 	assert.Contains(t, err.Error(), "Unknown API error")
+}
+
+// VS403283 means the service principal has not replicated into Azure DevOps
+// yet, which resolves on its own, so the create must keep trying.
+func TestServicePrincipalEntitlement_Create_RetriesWhenServicePrincipalNotReplicated(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	memberEntitlementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	clients := &client.AggregatedClient{
+		MemberEntitleManagementClient: memberEntitlementClient,
+		Ctx:                           context.Background(),
+	}
+
+	id := uuid.New()
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, licensing.AccountLicenseTypeValues.Express, "", uuid.New().String(), "sp-test", "")
+
+	notReplicated := notReplicatedResponse(&id)
+	isSuccess := true
+	success := &memberentitlementmanagement.ServicePrincipalEntitlementsPostResponse{
+		IsSuccess:                   &isSuccess,
+		ServicePrincipalEntitlement: mockServicePrincipalEntitlement,
+	}
+
+	gomock.InOrder(
+		memberEntitlementClient.EXPECT().
+			AddServicePrincipalEntitlement(gomock.Any(), gomock.Any()).
+			Return(notReplicated, nil).
+			Times(1),
+		memberEntitlementClient.EXPECT().
+			AddServicePrincipalEntitlement(gomock.Any(), gomock.Any()).
+			Return(success, nil).
+			Times(1),
+	)
+
+	added, err := addServicePrincipalEntitlement(clients, mockServicePrincipalEntitlement, 1*time.Minute)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, mockServicePrincipalEntitlement, added)
+}
+
+// Any other API error is permanent and must fail immediately, not burn the
+// whole create timeout.
+func TestServicePrincipalEntitlement_Create_DoesNotRetryOtherErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	memberEntitlementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	clients := &client.AggregatedClient{
+		MemberEntitleManagementClient: memberEntitlementClient,
+		Ctx:                           context.Background(),
+	}
+
+	id := uuid.New()
+	isSuccess := false
+	var key interface{} = "5000"
+	var value interface{} = "A service principal cannot be assigned an Account-EarlyAdopter license."
+
+	memberEntitlementClient.EXPECT().
+		AddServicePrincipalEntitlement(gomock.Any(), gomock.Any()).
+		Return(&memberentitlementmanagement.ServicePrincipalEntitlementsPostResponse{
+			IsSuccess: &isSuccess,
+			OperationResult: &memberentitlementmanagement.ServicePrincipalEntitlementOperationResult{
+				IsSuccess:          &isSuccess,
+				ServicePrincipalId: &id,
+				Errors:             &[]azuredevops.KeyValuePair{{Key: &key, Value: &value}},
+			},
+		}, nil).
+		Times(1)
+
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, licensing.AccountLicenseTypeValues.EarlyAdopter, "", uuid.New().String(), "sp-test", "")
+
+	_, err := addServicePrincipalEntitlement(clients, mockServicePrincipalEntitlement, 1*time.Minute)
+	assert.NotNil(t, err, "err should not be nil")
+	assert.Contains(t, err.Error(), "Account-EarlyAdopter")
+}
+
+// A service principal that never replicates must eventually surface the
+// original API error rather than a bare timeout.
+func TestServicePrincipalEntitlement_Create_SurfacesErrorWhenRetriesExhausted(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	memberEntitlementClient := azdosdkmocks.NewMockMemberentitlementmanagementClient(ctrl)
+	clients := &client.AggregatedClient{
+		MemberEntitleManagementClient: memberEntitlementClient,
+		Ctx:                           context.Background(),
+	}
+
+	id := uuid.New()
+	memberEntitlementClient.EXPECT().
+		AddServicePrincipalEntitlement(gomock.Any(), gomock.Any()).
+		Return(notReplicatedResponse(&id), nil).
+		MinTimes(1)
+
+	mockServicePrincipalEntitlement := getMockServicePrincipalEntitlement(&id, licensing.AccountLicenseTypeValues.Express, "", uuid.New().String(), "sp-test", "")
+
+	_, err := addServicePrincipalEntitlement(clients, mockServicePrincipalEntitlement, 1*time.Second)
+	assert.NotNil(t, err, "err should not be nil")
+	assert.Contains(t, err.Error(), servicePrincipalNotReplicatedErrorCode)
+}
+
+func notReplicatedResponse(id *uuid.UUID) *memberentitlementmanagement.ServicePrincipalEntitlementsPostResponse {
+	isSuccess := false
+	var key interface{} = servicePrincipalNotReplicatedErrorCode
+	var value interface{} = fmt.Sprintf("Could not add user '%s' at this time.", id)
+
+	return &memberentitlementmanagement.ServicePrincipalEntitlementsPostResponse{
+		IsSuccess: &isSuccess,
+		OperationResult: &memberentitlementmanagement.ServicePrincipalEntitlementOperationResult{
+			IsSuccess:          &isSuccess,
+			ServicePrincipalId: id,
+			Errors:             &[]azuredevops.KeyValuePair{{Key: &key, Value: &value}},
+		},
+	}
 }
 
 func getMockServicePrincipalEntitlement(id *uuid.UUID, accountLicenseType licensing.AccountLicenseType, origin string, originID string, displayName string, descriptor string) *memberentitlementmanagement.ServicePrincipalEntitlement {
