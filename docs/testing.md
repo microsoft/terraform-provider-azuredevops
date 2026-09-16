@@ -13,11 +13,12 @@ Instead, this document focuses on what makes testing for this project unique.
 
 # Authoring Tests
 
-`_test.go` files **must not** carry a build tag. The provider used to group tests with
-[GO build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints), but the
-tags were dropped from the acceptance tests in #1436 and from the unit tests in #1439,
-because a tagged test file is skipped unless the tag is passed explicitly, which is easy
-to get wrong and left most of the suite out of CI.
+Do not use [GO build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints)
+to group or select tests by resource or data source. The provider used to do this, but the
+tags were dropped from the acceptance tests in #1436 and from the unit tests in #1439: a
+tagged test file is skipped unless the tag is passed explicitly, which is easy to get
+wrong and left most of the suite out of CI. (Build constraints for their usual purposes,
+such as platform specific code, are of course still fine.)
 
 Acceptance tests are still kept out of a normal `go test` run, but by their own guards
 rather than by a build tag: they live in `azuredevops/internal/acceptancetests`, they are
@@ -91,7 +92,7 @@ Here are some important details:
 
 > Note: Running acceptance tests provisions and deletes actual resources in AzDO. This can cost money and can be dangerous if you are not running them in isolation!
 
-Integration tests for terraform providers are typically implemented as [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). They have a special prefix - `TestAcc` - and will only be run when the `TEST_ACC` environment variable is set. They also rely on some environment variables. The following steps will run configure and run the acceptance tests:
+Integration tests for terraform providers are typically implemented as [Acceptance Tests](https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html). They have a special prefix - `TestAcc` - and will only be run when the `TF_ACC` environment variable is set. They also rely on some environment variables. The following steps will run configure and run the acceptance tests:
 
 ```bash
 # AZDO_ORG_SERVICE_URL will be the URL of the AzDO org that you want to provison

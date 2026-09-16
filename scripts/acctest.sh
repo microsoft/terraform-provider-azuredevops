@@ -4,6 +4,13 @@ set -euo pipefail
 
 . $(dirname $0)/commons.sh
 
+# Guard against the old tag based invocation. Since the build tags were removed the
+# argument would be silently ignored and every acceptance test would run, which
+# creates and destroys real resources.
+if [ "$#" -gt 0 ]; then
+    fatal "Selecting tests by build tag is no longer supported. Use 'go test -run <pattern>' or 'make testacc TESTARGS=-run=<pattern>' instead."
+fi
+
 info "Executing acceptance tests"
 (
     cd "$SOURCE_DIR"

@@ -62,6 +62,10 @@ test: fmtcheck
 	go test -v ./...
 
 testacc: fmtcheck
+	@if [ -n "$(TESTTAGS)" ]; then \
+		echo "ERROR: TESTTAGS is no longer supported. Use TESTARGS='-run=<pattern>' to select tests."; \
+		exit 1; \
+	fi
 	@echo "==> Sourcing .env file if available"
 	if [ -f .env ]; then set -o allexport; . ./.env; set +o allexport; fi; \
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
