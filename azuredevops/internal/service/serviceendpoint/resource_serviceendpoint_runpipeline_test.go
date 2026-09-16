@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_rpipeline) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_rpipeline
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

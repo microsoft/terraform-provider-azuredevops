@@ -1,7 +1,3 @@
-//go:build (all || resource_workitemtrackingprocess || resource_workitemtrackingprocess_inherited_state) && !exclude_resource_workitemtrackingprocess
-// +build all resource_workitemtrackingprocess resource_workitemtrackingprocess_inherited_state
-// +build !exclude_resource_workitemtrackingprocess
-
 package workitemtrackingprocess
 
 import (

@@ -1,7 +1,3 @@
-//go:build (all || core || resource_group) && !exclude_resource_group
-// +build all core resource_group
-// +build !exclude_resource_group
-
 package graph
 
 // The tests in this file use the mock clients in mock_client.go to mock out

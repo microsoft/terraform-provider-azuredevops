@@ -1,7 +1,3 @@
-//go:build (all || resource_environment) && !exclude_resource_environment
-// +build all resource_environment
-// +build !exclude_resource_environment
-
 package taskagent
 
 import (

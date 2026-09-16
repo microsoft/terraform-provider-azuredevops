@@ -1,7 +1,3 @@
-//go:build (all || resource_build_folder) && !exclude_resource_build_folder
-// +build all resource_build_folder
-// +build !exclude_resource_build_folder
-
 package build
 
 import (

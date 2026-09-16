@@ -1,7 +1,3 @@
-//go:build (all || resource_servicehook_webhook) && !exclude_subscriptions
-// +build all resource_servicehook_webhook
-// +build !exclude_subscriptions
-
 package servicehook
 
 import (

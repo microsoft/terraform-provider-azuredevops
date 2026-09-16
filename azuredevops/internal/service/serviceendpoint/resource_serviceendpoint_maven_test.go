@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_maven) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_maven
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_dockerregistry) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_dockerregistry
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

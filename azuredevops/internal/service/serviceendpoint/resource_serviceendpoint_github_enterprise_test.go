@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_github_enterprise) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_github_enterprise
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

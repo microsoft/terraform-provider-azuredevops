@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_gcp_terraform) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_gcp_terraform
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

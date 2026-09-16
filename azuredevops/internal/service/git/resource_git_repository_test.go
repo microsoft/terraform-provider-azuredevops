@@ -1,7 +1,3 @@
-//go:build (all || git || resource_git_repository) && (!exclude_git || !exclude_resource_git_repository)
-// +build all git resource_git_repository
-// +build !exclude_git !exclude_resource_git_repository
-
 package git
 
 import (

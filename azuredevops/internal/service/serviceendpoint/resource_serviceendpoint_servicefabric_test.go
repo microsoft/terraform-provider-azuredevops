@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_service_faric) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_service_faric
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

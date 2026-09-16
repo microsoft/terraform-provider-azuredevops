@@ -1,7 +1,3 @@
-//go:build (all || security || data_sources || data_security_namespace_token) && (!exclude_data_sources || !exclude_security || !exclude_data_security_namespace_token)
-// +build all security data_sources data_security_namespace_token
-// +build !exclude_data_sources !exclude_security !exclude_data_security_namespace_token
-
 package security
 
 import (

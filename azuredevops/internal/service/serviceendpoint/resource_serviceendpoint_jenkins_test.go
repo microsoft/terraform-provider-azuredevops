@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_jenkins) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_jenkins
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (

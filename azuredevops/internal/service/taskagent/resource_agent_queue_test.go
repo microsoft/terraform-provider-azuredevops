@@ -1,6 +1,3 @@
-//go:build all || resource_agent_queue
-// +build all resource_agent_queue
-
 package taskagent
 
 import (
