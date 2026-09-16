@@ -74,11 +74,6 @@ linters:
       - common-false-positives
       - std-error-handling
     rules:
-      # Unit tests call the flatten/expand helpers only to seed a *schema.ResourceData,
-      # and assert on the behaviour under test rather than on the seeding itself.
-      - path: _test\.go
-        linters:
-          - errcheck
       # Resources that still register the non-context CRUD callbacks can only be driven
       # through the deprecated schema.Resource.{Create,Read,Update,Delete} fields, so
       # their unit tests cannot avoid the deprecation warning.

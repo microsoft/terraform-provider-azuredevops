@@ -19,7 +19,7 @@ func TestWorkItem_GetWorkItem(t *testing.T) {
 		"System.AreaPath":      "SomePath",
 		"System.IterationPath": "SomeIterationPath",
 	}
-	flattenFields(d, &input)
+	require.NoError(t, flattenFields(d, &input))
 
 	require.Equal(t, "TestTitle", d.Get("title").(string))
 	require.Equal(t, "To Do", d.Get("state").(string))

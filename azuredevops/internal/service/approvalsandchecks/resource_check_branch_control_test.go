@@ -56,7 +56,7 @@ var branchControlCheckTest = pipelineschecksextras.CheckConfiguration{
 func TestCheckBranchControl_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckBranchControl().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *branchControlCheckTest.Id))
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	require.NoError(t, flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID))
 
 	branchControlCheckAfterRoundTrip, projectID, err := expandBranchControlCheck(resourceData)
 
@@ -73,7 +73,7 @@ func TestCheckBranchControl_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *branchControlCheckTest.Id))
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	require.NoError(t, flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
@@ -97,7 +97,7 @@ func TestCheckBranchControl_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *branchControlCheckTest.Id))
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	require.NoError(t, flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
@@ -126,7 +126,7 @@ func TestCheckBranchControl_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *branchControlCheckTest.Id))
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	require.NoError(t, flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
@@ -154,7 +154,7 @@ func TestCheckBranchControl_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckBranchControl()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *branchControlCheckTest.Id))
-	flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID)
+	require.NoError(t, flattenBranchControlCheck(resourceData, &branchControlCheckTest, branchControlCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}

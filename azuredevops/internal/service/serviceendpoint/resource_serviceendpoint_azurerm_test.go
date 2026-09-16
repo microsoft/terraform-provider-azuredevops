@@ -267,7 +267,8 @@ func TestServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
 			resourceData.Set("credentials", credentials)
 		}
 		flattenServiceEndpointAzureRM(resourceData, &resource)
-		serviceEndpointAfterRoundTrip, _ := expandServiceEndpointAzureRM(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointAzureRM(resourceData)
+		require.NoError(t, err)
 
 		require.Equal(t, resource, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)

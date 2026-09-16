@@ -55,7 +55,7 @@ var awsTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointAws_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointAws().Schema, nil)
 	resourceData.Set("project_id", (*awsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
-	flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint)
+	require.NoError(t, flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint))
 
 	serviceEndpointAfterRoundTrip := expandServiceEndpointAws(resourceData)
 
@@ -71,7 +71,7 @@ func TestServiceEndpointAws_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAws()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.Set("project_id", (*awsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
-	flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint)
+	require.NoError(t, flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -95,7 +95,7 @@ func TestServiceEndpointAws_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAws()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.Set("project_id", (*awsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
-	flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint)
+	require.NoError(t, flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -122,7 +122,7 @@ func TestServiceEndpointAws_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAws()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.Set("project_id", (*awsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
-	flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint)
+	require.NoError(t, flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -151,7 +151,7 @@ func TestServiceEndpointAws_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAws()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.Set("project_id", (*awsTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
-	flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint)
+	require.NoError(t, flattenServiceEndpointAws(resourceData, &awsTestServiceEndpoint))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

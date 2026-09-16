@@ -356,7 +356,7 @@ func TestUserEntitlement_Create_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -412,7 +412,7 @@ func TestUserEntitlement_Create_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 
 	memberEntitlementClient.
@@ -454,7 +454,7 @@ func TestUserEntitlement_Update_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -513,7 +513,7 @@ func TestUserEntitlement_Update_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 
 	memberEntitlementClient.

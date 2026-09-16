@@ -55,7 +55,7 @@ var ApprovalCheckTest = pipelineschecksextras.CheckConfiguration{
 // verifies that the flatten/expand round trip yields the same branch control
 func TestCheckApproval_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckApproval().Schema, nil)
-	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	require.NoError(t, flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID))
 
 	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	ApprovalCheckAfterRoundTrip, projectID, err := expandCheckApproval(resourceData)
@@ -73,7 +73,7 @@ func TestCheckApproval_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
-	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	require.NoError(t, flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
@@ -97,7 +97,7 @@ func TestCheckApproval_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
-	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	require.NoError(t, flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
@@ -126,7 +126,7 @@ func TestCheckApproval_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
-	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	require.NoError(t, flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}
@@ -154,7 +154,7 @@ func TestCheckApproval_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckApproval()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
-	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	require.NoError(t, flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID))
 
 	pipelinesChecksClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesChecksClient, Ctx: context.Background()}

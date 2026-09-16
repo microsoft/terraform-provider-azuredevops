@@ -320,7 +320,7 @@ func TestGroupEntitlement_Create_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -376,7 +376,7 @@ func TestGroupEntitlement_Create_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	operationResult := memberentitlementmanagement.GroupOperationResult{
 		IsSuccess: &expectedIsSuccess,
@@ -417,7 +417,7 @@ func TestGroupEntitlement_Update_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -474,7 +474,7 @@ func TestGroupEntitlement_Update_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	operationResult := memberentitlementmanagement.GroupOperationResult{
 		IsSuccess: &expectedIsSuccess,

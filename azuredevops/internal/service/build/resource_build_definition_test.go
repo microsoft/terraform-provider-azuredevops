@@ -305,7 +305,7 @@ func TestBuildDefinition_Expand_RepoUrl_Github(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
@@ -322,7 +322,7 @@ func TestBuildDefinition_Expand_RepoUrl_Bitbucket(t *testing.T) {
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	bitBucketBuildDef := testBuildDefinitionBitbucket()
-	flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID))
 	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
@@ -339,7 +339,7 @@ func TestBuildDefinition_Expand_RepoUrl_GithubEnterprise(t *testing.T) {
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
 
-	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID))
 	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
@@ -352,7 +352,7 @@ func TestBuildDefinition_ValidatesServiceConnection_Bitbucket(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	bitBucketBuildDef := testBuildDefinitionBitbucket()
 	(*bitBucketBuildDef.Repository.Properties)["connectedServiceId"] = ""
-	flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID))
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -373,7 +373,7 @@ func TestBuildDefinition_ValidatesServiceConnection_GitHubEnterprise(t *testing.
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
 	(*gitHubEnterpriseBuildDef.Repository.Properties)["connectedServiceId"] = ""
-	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID))
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -396,7 +396,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_Bitbucket(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinitionBitbucketWithCITrigger, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinitionBitbucketWithCITrigger, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -419,7 +419,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinitionGitHubEnterpriseWithCITrigger, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinitionGitHubEnterpriseWithCITrigger, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -447,7 +447,7 @@ func TestBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	for _, triggerGroup := range triggerGroups {
 		testBuildDefinitionWithCustomTriggers := testBuildDefinition
 		testBuildDefinitionWithCustomTriggers.Triggers = &triggerGroup
-		flattenBuildDefinition(resourceData, &testBuildDefinitionWithCustomTriggers, testProjectID)
+		require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinitionWithCustomTriggers, testProjectID))
 		buildDefinitionYamlAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 		require.Nil(t, err)
@@ -475,7 +475,7 @@ func TestBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -498,7 +498,7 @@ func TestBuildDefinition_Read_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -521,7 +521,7 @@ func TestBuildDefinition_Delete_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -544,7 +544,7 @@ func TestBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}

@@ -96,7 +96,10 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 }
 
 func encodeBranchName(branchName string) string {
-	ret, _ := converter.EncodeUtf16HexString(branchName)
+	ret, err := converter.EncodeUtf16HexString(branchName)
+	if err != nil {
+		panic(err)
+	}
 	return ret
 }
 

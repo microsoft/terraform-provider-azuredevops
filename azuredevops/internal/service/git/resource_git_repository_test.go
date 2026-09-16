@@ -42,7 +42,7 @@ func TestGitRepo_Create_DoesNotSwallowErrorFromFailedCreateCall(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
 	resourceData.SetId(testGitRepository.Id.String())
-	flattenGitRepository(resourceData, &testGitRepository)
+	require.NoError(t, flattenGitRepository(resourceData, &testGitRepository))
 	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
@@ -74,7 +74,7 @@ func TestGitRepo_Update_DoesNotSwallowErrorFromFailedCreateCall(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceGitRepository().Schema, nil)
 	resourceData.SetId(testGitRepository.Id.String())
-	flattenGitRepository(resourceData, &testGitRepository)
+	require.NoError(t, flattenGitRepository(resourceData, &testGitRepository))
 	configureCleanInitialization(resourceData)
 
 	reposClient := azdosdkmocks.NewMockGitClient(ctrl)
@@ -126,7 +126,7 @@ func TestGitRepo_FlattenExpand_RoundTrip(t *testing.T) {
 	})
 	resourceData.SetId(gitRepo.Id.String())
 	configureCleanInitialization(resourceData)
-	flattenGitRepository(resourceData, &gitRepo)
+	require.NoError(t, flattenGitRepository(resourceData, &gitRepo))
 
 	expandedGitRepo, repoInitialization, expandedProjectID, err := expandGitRepository(resourceData)
 
@@ -251,7 +251,8 @@ func TestGitRepo_Read_UsesIdIfSet(t *testing.T) {
 		Return(nil, fmt.Errorf("error")).
 		Times(1)
 
-	resourceGitRepositoryRead(resourceData, clients)
+	// the stubbed GetRepository fails; the point of the test is the arguments it was called with
+	require.Error(t, resourceGitRepositoryRead(resourceData, clients))
 }
 
 func TestGitRepo_Delete_ChecksForValidUUID(t *testing.T) {
@@ -309,5 +310,6 @@ func TestGitRepo_Read_UsesNameIfIdNotSet(t *testing.T) {
 		Return(nil, fmt.Errorf("error")).
 		Times(1)
 
-	resourceGitRepositoryRead(resourceData, clients)
+	// the stubbed GetRepository fails; the point of the test is the arguments it was called with
+	require.Error(t, resourceGitRepositoryRead(resourceData, clients))
 }

@@ -21,7 +21,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var id, _ = uuid.Parse("00000000-0000-0000-0000-000000000000")
+var id = uuid.MustParse("00000000-0000-0000-0000-000000000000")
 
 var usrList1 = []graph.GraphUser{
 	{
