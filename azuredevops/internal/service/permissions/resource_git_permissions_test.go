@@ -28,12 +28,10 @@ var (
 	gitTokenProject       = fmt.Sprintf("repoV2/%s", gitProjectID)
 	gitRepositoryID       = "c629a0a4-926d-45d1-8095-6e2499cf3938"
 	gitTokenRepository    = fmt.Sprintf("%s/%s", gitTokenProject, gitRepositoryID)
-	gitTokenBranchAll     = fmt.Sprintf("%s/refs/heads", gitTokenRepository)
 	gitBranchNameValid    = "master"
 	gitTokenBranch        = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid))
 	gitSubBranchNameValid = "1.0.0"
 	gitTokenSubBranch     = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid)+"/"+encodeBranchName(gitSubBranchNameValid))
-	gitBranchNameInValid  = "@@invalid@@"
 )
 
 func TestGitPermissions_CreateGitToken(t *testing.T) {

@@ -57,9 +57,8 @@ func testServiceEndpointNexus_ExpandFlatten_Roundtrip(t *testing.T, ep *servicee
 		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointNexus(resourceData, ep)
 
-		serviceEndpointAfterRoundTrip, err := expandServiceEndpointNexus(resourceData)
+		serviceEndpointAfterRoundTrip := expandServiceEndpointNexus(resourceData)
 
-		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
@@ -151,7 +150,7 @@ func testServiceEndpointNexus_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -190,9 +189,5 @@ func testServiceEndpointNexus_Update_DoesNotSwallowError(t *testing.T, ep *servi
 }
 
 func TestServiceEndpointNexus_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointNexus_Delete_DoesNotSwallowError(t, &nexusTestServiceEndpointPassword, nexusTestServiceEndpointProjectIDpassword)
-}
-
-func TestServiceEndpointNexus_Update_DoesNotSwallowError(t *testing.T) {
 	testServiceEndpointNexus_Update_DoesNotSwallowError(t, &nexusTestServiceEndpointPassword, nexusTestServiceEndpointProjectIDpassword)
 }

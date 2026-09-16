@@ -21,12 +21,6 @@ import (
 )
 
 var subscriptionWebhookID = uuid.New()
-var createdByID = uuid.New()
-var modifiedByID = uuid.New()
-var subscriberID = uuid.New()
-
-var enabledStatus = servicehooks.SubscriptionStatus("enabled")
-var onProbationStatus = servicehooks.SubscriptionStatus("onProbation")
 
 var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 	{

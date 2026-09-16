@@ -171,7 +171,7 @@ func TestGitRepo_Read_DoesNotSwallowErrorFromFailedReadCall(t *testing.T) {
 	require.Contains(t, err.Error(), "GetRepository() Failed")
 }
 
-// verifies that 'Clean' repo initalization uses default branch name
+// verifies that 'Clean' repo initialization uses default branch name
 func TestGitRepo_Initialize_UsesTheDefaultBranch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

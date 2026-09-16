@@ -302,7 +302,6 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 
 		err := r.Create(resourceData, clients)
 		require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
-
 	}
 }
 
@@ -428,7 +427,7 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 			EXPECT().
 			DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 			Return(errors.New("DeleteServiceEndpoint() Failed")).
-			Times(1)
+			Times(3)
 
 		err := r.Delete(resourceData, clients)
 		require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -513,7 +512,7 @@ func TestServiceEndpointAzureRM_UpdateWithValidate_DoesNotSwallowError(t *testin
 //		Azure DevOps API as an indicator to "not update" the field. The resulting behavior is that
 //		this Terraform Resource will be able to update the Service Endpoint without needing to
 //		pass the password along in each request.
-//func TestServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
+// func TestServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
 //	// step (1)
 //	endpoint := getManualAuthServiceEndpoint()
 //	resourceData := getResourceData(t, endpoint)

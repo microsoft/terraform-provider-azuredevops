@@ -83,16 +83,14 @@ var argocdTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func testServiceEndpointArgoCD_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
-
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArgoCD().Schema, nil)
-		resourceData.Set("project_id", (*(*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id).String())
+		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointArgoCD(resourceData, ep)
 
 		serviceEndpointAfterRoundTrip, err := expandServiceEndpointArgoCD(resourceData)
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-
 	}
 }
 
@@ -194,7 +192,7 @@ func testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t *testing.T, ep *serv
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -237,13 +235,9 @@ func testServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T, ep *serv
 }
 
 func TestServiceEndpointArgoCD_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
+	testServiceEndpointArgoCD_Update_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
 }
 
 func TestServiceEndpointArgoCD_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArgoCD_Delete_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
-}
-
-func TestServiceEndpointArgoCD_Update_DoesNotSwallowError(t *testing.T) {
-	testServiceEndpointArgoCD_Update_DoesNotSwallowError(t, &argocdTestServiceEndpoint, argocdTestServiceEndpointProjectID)
+	testServiceEndpointArgoCD_Update_DoesNotSwallowError(t, &argocdTestServiceEndpointPassword, argocdTestServiceEndpointProjectIDpassword)
 }

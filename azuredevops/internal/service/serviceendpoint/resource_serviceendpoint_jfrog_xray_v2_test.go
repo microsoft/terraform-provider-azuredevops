@@ -22,7 +22,7 @@ import (
 var (
 	xrayV2TestServiceEndpointIDpassword          = uuid.New()
 	xrayV2RandomServiceEndpointProjectIDpassword = uuid.New()
-	xrayV2TestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+	xrayV2TestServiceEndpointProjectIDpassword   = &xrayV2RandomServiceEndpointProjectIDpassword
 )
 
 var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
@@ -53,7 +53,7 @@ var xrayV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 var (
 	xrayV2TestServiceEndpointID          = uuid.New()
 	xrayV2RandomServiceEndpointProjectID = uuid.New()
-	xrayV2TestServiceEndpointProjectID   = &artifactoryRandomServiceEndpointProjectID
+	xrayV2TestServiceEndpointProjectID   = &xrayV2RandomServiceEndpointProjectID
 )
 
 var xrayV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -83,7 +83,6 @@ var xrayV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
-
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogXRayV2().Schema, nil)
 		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointArtifactory(resourceData, ep)
@@ -92,7 +91,6 @@ func testServiceEndpointxrayV2_ExpandFlatten_Roundtrip(t *testing.T, ep *service
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-
 	}
 }
 
@@ -194,7 +192,7 @@ func testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t *testing.T, ep *serv
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -208,10 +206,38 @@ func TestServiceEndpointxrayV2_Delete_DoesNotSwallowErrorPassword(t *testing.T) 
 	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }
 
+// verifies that if an error is produced on an update, it is not swallowed
+func testServiceEndpointxrayV2_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointJFrogXRayV2()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+	}
+
+	buildClient.
+		EXPECT().
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Update(resourceData, clients)
+	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+
 func TestServiceEndpointxrayV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
+	testServiceEndpointxrayV2_Update_DoesNotSwallowError(t, &xrayV2TestServiceEndpoint, xrayV2TestServiceEndpointProjectID)
 }
 
 func TestServiceEndpointxrayV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointxrayV2_Delete_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointxrayV2_Update_DoesNotSwallowError(t, &xrayV2TestServiceEndpointPassword, xrayV2TestServiceEndpointProjectIDpassword)
 }

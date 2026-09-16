@@ -22,7 +22,7 @@ import (
 var (
 	platformV2TestServiceEndpointIDpassword          = uuid.New()
 	platformV2RandomServiceEndpointProjectIDpassword = uuid.New()
-	platformV2TestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+	platformV2TestServiceEndpointProjectIDpassword   = &platformV2RandomServiceEndpointProjectIDpassword
 )
 
 var platformV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
@@ -53,7 +53,7 @@ var platformV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 var (
 	platformV2TestServiceEndpointID          = uuid.New()
 	platformV2RandomServiceEndpointProjectID = uuid.New()
-	platformV2TestServiceEndpointProjectID   = &artifactoryRandomServiceEndpointProjectID
+	platformV2TestServiceEndpointProjectID   = &platformV2RandomServiceEndpointProjectID
 )
 
 var platformV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -83,7 +83,6 @@ var platformV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
-
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogPlatformV2().Schema, nil)
 		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointArtifactory(resourceData, ep)
@@ -92,7 +91,6 @@ func testServiceEndpointplatformV2_ExpandFlatten_Roundtrip(t *testing.T, ep *ser
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-
 	}
 }
 
@@ -194,7 +192,7 @@ func testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t *testing.T, ep *
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -208,10 +206,38 @@ func TestServiceEndpointplatformV2_Delete_DoesNotSwallowErrorPassword(t *testing
 	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }
 
+// verifies that if an error is produced on an update, it is not swallowed
+func testServiceEndpointplatformV2_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointJFrogPlatformV2()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+	}
+
+	buildClient.
+		EXPECT().
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Update(resourceData, clients)
+	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+
 func TestServiceEndpointplatformV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
+	testServiceEndpointplatformV2_Update_DoesNotSwallowError(t, &platformV2TestServiceEndpoint, platformV2TestServiceEndpointProjectID)
 }
 
 func TestServiceEndpointplatformV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointplatformV2_Delete_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointplatformV2_Update_DoesNotSwallowError(t, &platformV2TestServiceEndpointPassword, platformV2TestServiceEndpointProjectIDpassword)
 }

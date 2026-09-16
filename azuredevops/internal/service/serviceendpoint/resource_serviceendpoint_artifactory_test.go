@@ -83,7 +83,6 @@ var artifactoryTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
-
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArtifactory().Schema, nil)
 		resourceData.Set("project_id", id.String())
 		flattenServiceEndpointArtifactory(resourceData, ep)
@@ -193,7 +192,7 @@ func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep 
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -207,10 +206,38 @@ func TestServiceEndpointArtifactory_Delete_DoesNotSwallowErrorPassword(t *testin
 	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }
 
+// verifies that if an error is produced on an update, it is not swallowed
+func testServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointArtifactory()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+	}
+
+	buildClient.
+		EXPECT().
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Update(resourceData, clients)
+	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+
 func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
+	testServiceEndpointArtifactory_Update_DoesNotSwallowError(t, &artifactoryTestServiceEndpoint, artifactoryTestServiceEndpointProjectID)
 }
 
 func TestServiceEndpointArtifactory_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
+	testServiceEndpointArtifactory_Update_DoesNotSwallowError(t, &artifactoryTestServiceEndpointPassword, artifactoryTestServiceEndpointProjectIDpassword)
 }

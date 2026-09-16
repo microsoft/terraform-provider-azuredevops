@@ -218,7 +218,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionDeleteDoesNotSwallowError(
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New(errMsgDeleteServiceEndpoint)).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), errMsgDeleteServiceEndpoint)
@@ -352,7 +352,7 @@ func TestServiceEndpointKubernetesForKubeconfigDeleteDoesNotSwallowError(t *test
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New(errMsgDeleteServiceEndpoint)).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), errMsgDeleteServiceEndpoint)
@@ -488,7 +488,7 @@ func TestServiceEndpointKubernetesForServiceAccountDeleteDoesNotSwallowError(t *
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New(errMsgDeleteServiceEndpoint)).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), errMsgDeleteServiceEndpoint)

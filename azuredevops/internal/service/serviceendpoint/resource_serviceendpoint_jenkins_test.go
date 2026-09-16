@@ -60,9 +60,8 @@ func testServiceEndpointJenkins_ExpandFlatten_Roundtrip(t *testing.T, ep *servic
 		resourceData.Set("project_id", (*se.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointJenkins(resourceData, se)
 
-		serviceEndpointAfterRoundTrip, err := expandServiceEndpointJenkins(resourceData)
+		serviceEndpointAfterRoundTrip := expandServiceEndpointJenkins(resourceData)
 
-		require.Nil(t, err)
 		require.Equal(t, *se, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 	}
@@ -84,7 +83,7 @@ func TestServiceEndpointJenkins_Create_DoesNotSwallowErrorPassword(t *testing.T)
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-	seJenkins, _ := expandServiceEndpointJenkins(resourceData)
+	seJenkins := expandServiceEndpointJenkins(resourceData)
 	buildClient.
 		EXPECT().
 		CreateServiceEndpoint(clients.Ctx, serviceendpoint.CreateServiceEndpointArgs{Endpoint: seJenkins}).
@@ -149,7 +148,7 @@ func testServiceEndpointJenkins_Delete_DoesNotSwallowError(t *testing.T, ep *ser
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -159,6 +158,34 @@ func TestServiceEndpointJenkins_Delete_DoesNotSwallowErrorPassword(t *testing.T)
 	testServiceEndpointJenkins_Delete_DoesNotSwallowError(t, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDPassword)
 }
 
+// verifies that if an error is produced on an update, it is not swallowed
+func testServiceEndpointJenkins_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointJenkins()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	flattenServiceEndpointJenkins(resourceData, ep)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+	}
+
+	buildClient.
+		EXPECT().
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Update(resourceData, clients)
+	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+
 func TestServiceEndpointJenkins_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointJenkins_Delete_DoesNotSwallowError(t, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDPassword)
+	testServiceEndpointJenkins_Update_DoesNotSwallowError(t, &jenkinsTestServiceEndpointPassword, jenkinsTestServiceEndpointProjectIDPassword)
 }

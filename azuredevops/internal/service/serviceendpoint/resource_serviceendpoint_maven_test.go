@@ -22,7 +22,7 @@ import (
 var (
 	mavenTestServiceEndpointIDpassword          = uuid.New()
 	mavenRandomServiceEndpointProjectIDpassword = uuid.New()
-	mavenTestServiceEndpointProjectIDpassword   = &mavenRandomServiceEndpointProjectID
+	mavenTestServiceEndpointProjectIDpassword   = &mavenRandomServiceEndpointProjectIDpassword
 )
 
 var mavenTestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
@@ -200,7 +200,7 @@ func testServiceEndpointMaven_Delete_DoesNotSwallowError(t *testing.T, ep *servi
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -243,9 +243,9 @@ func testServiceEndpointMaven_Update_DoesNotSwallowError(t *testing.T, ep *servi
 }
 
 func TestServiceEndpointMaven_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointMaven_Delete_DoesNotSwallowError(t, &mavenTestServiceEndpoint, mavenTestServiceEndpointProjectID)
+	testServiceEndpointMaven_Update_DoesNotSwallowError(t, &mavenTestServiceEndpoint, mavenTestServiceEndpointProjectID)
 }
 
 func TestServiceEndpointMaven_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointMaven_Delete_DoesNotSwallowError(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
+	testServiceEndpointMaven_Update_DoesNotSwallowError(t, &mavenTestServiceEndpointPassword, mavenTestServiceEndpointProjectIDpassword)
 }

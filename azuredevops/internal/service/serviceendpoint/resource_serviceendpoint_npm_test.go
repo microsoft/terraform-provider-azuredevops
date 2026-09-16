@@ -55,11 +55,10 @@ func TestServiceEndpointNpm_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*npmTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointNpm(resourceData, &npmTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointNpm(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointNpm(resourceData)
 
 	require.Equal(t, npmTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, npmTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -136,7 +135,7 @@ func TestServiceEndpointNpm_Delete_DoesNotSwallowError(t *testing.T) {
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")

@@ -61,11 +61,10 @@ func TestServiceEndpointDockerRegistry_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData.Set("project_id", (*dockerRegistryTestServiceEndpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	flattenServiceEndpointDockerRegistry(resourceData, &dockerRegistryTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointDockerRegistry(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointDockerRegistry(resourceData)
 
 	require.Equal(t, dockerRegistryTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, dockerRegistryTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-	require.Nil(t, err)
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
@@ -144,7 +143,7 @@ func TestServiceEndpointDockerRegistry_Delete_DoesNotSwallowError(t *testing.T) 
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")

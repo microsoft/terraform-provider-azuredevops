@@ -72,7 +72,7 @@ func TestUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *testing.T) {
 
 //
 //// if origin_id is "" and principal_name is "", an error will be reported.
-//func TestUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_PrincipalName(t *testing.T) {
+// func TestUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_PrincipalName(t *testing.T) {
 //	ctrl := gomock.NewController(t)
 //	defer ctrl.Finish()
 //

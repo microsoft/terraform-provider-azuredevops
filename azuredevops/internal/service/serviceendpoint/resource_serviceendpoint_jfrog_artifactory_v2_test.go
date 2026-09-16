@@ -22,7 +22,7 @@ import (
 var (
 	artifactoryV2TestServiceEndpointIDpassword          = uuid.New()
 	artifactoryV2RandomServiceEndpointProjectIDpassword = uuid.New()
-	artifactoryV2TestServiceEndpointProjectIDpassword   = &artifactoryRandomServiceEndpointProjectIDpassword
+	artifactoryV2TestServiceEndpointProjectIDpassword   = &artifactoryV2RandomServiceEndpointProjectIDpassword
 )
 
 var artifactoryV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
@@ -51,8 +51,9 @@ var artifactoryV2TestServiceEndpointPassword = serviceendpoint.ServiceEndpoint{
 }
 
 var (
-	artifactoryV2TestServiceEndpointID        = uuid.New()
-	artifactoryV2TestServiceEndpointProjectID = &artifactoryRandomServiceEndpointProjectID
+	artifactoryV2TestServiceEndpointID          = uuid.New()
+	artifactoryV2RandomServiceEndpointProjectID = uuid.New()
+	artifactoryV2TestServiceEndpointProjectID   = &artifactoryV2RandomServiceEndpointProjectID
 )
 
 var artifactoryV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
@@ -82,7 +83,6 @@ var artifactoryV2TestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
-
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointJFrogArtifactoryV2().Schema, nil)
 		resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 		flattenServiceEndpointArtifactory(resourceData, ep)
@@ -91,7 +91,6 @@ func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *
 		require.Nil(t, err)
 		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
-
 	}
 }
 
@@ -193,7 +192,7 @@ func testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t *testing.T, e
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -207,10 +206,38 @@ func TestServiceEndpointArtifactoryV2_Delete_DoesNotSwallowErrorPassword(t *test
 	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }
 
+// verifies that if an error is produced on an update, it is not swallowed
+func testServiceEndpointArtifactoryV2_Update_DoesNotSwallowError(t *testing.T, ep *serviceendpoint.ServiceEndpoint, id *uuid.UUID) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceServiceEndpointJFrogArtifactoryV2()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
+	resourceData.Set("project_id", (*ep.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
+	flattenServiceEndpointArtifactory(resourceData, ep)
+
+	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
+	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
+
+	expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
+		Endpoint:   ep,
+		EndpointId: ep.Id,
+	}
+
+	buildClient.
+		EXPECT().
+		UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+		Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+		Times(1)
+
+	err := r.Update(resourceData, clients)
+	require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+}
+
 func TestServiceEndpointArtifactoryV2_Update_DoesNotSwallowErrorToken(t *testing.T) {
-	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpoint, artifactoryV2TestServiceEndpointProjectID)
+	testServiceEndpointArtifactoryV2_Update_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpoint, artifactoryV2TestServiceEndpointProjectID)
 }
 
 func TestServiceEndpointArtifactoryV2_Update_DoesNotSwallowErrorPassword(t *testing.T) {
-	testServiceEndpointArtifactoryV2_Delete_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
+	testServiceEndpointArtifactoryV2_Update_DoesNotSwallowError(t, &artifactoryV2TestServiceEndpointPassword, artifactoryV2TestServiceEndpointProjectIDpassword)
 }

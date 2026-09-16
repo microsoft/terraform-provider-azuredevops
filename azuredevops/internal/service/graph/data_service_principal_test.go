@@ -43,7 +43,7 @@ func TestServicePrincipalNotFound(t *testing.T) {
 
 	// Execute the function and check for the expected error
 	err := dataSourceServicePrincipalRead(resourceData, clients)
-	require.Contains(t, err.Error(), " Finding service principal with filter")
+	require.Contains(t, err.Error(), "Finding service principal with filter")
 }
 
 // verifies that the translation for display_name to descriptor has proper error handling

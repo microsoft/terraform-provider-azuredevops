@@ -117,7 +117,7 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 
 	firstListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
 	continuationToken := "continuation-token"
-	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String()})
+	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String(), domain: "vstfs:///Classification/TeamProject/" + projectID.String()})
 
 	var calls []*gomock.Call
 
@@ -127,7 +127,7 @@ func TestGroupsDataSource_HandlesContinuationToken(t *testing.T) {
 		Return(firstListGroupCallResponse, nil)
 
 	secondListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor, ContinuationToken: &continuationToken}
-	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String()})
+	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Classification/TeamProject/" + projectID.String()})
 	secondCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, secondListGroupCallArgs).

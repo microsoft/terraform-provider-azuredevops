@@ -107,9 +107,7 @@ func TestStringFromInterface_StringValue(t *testing.T) {
 
 func TestStringFromInterface_InterfaceValue(t *testing.T) {
 	value := "Hello World"
-	var interfaceValue interface{}
-
-	interfaceValue = value
+	var interfaceValue interface{} = value
 	valuePtr := StringFromInterface(interfaceValue)
 	if value != *valuePtr {
 		t.Errorf("The pointer returned references a different value")

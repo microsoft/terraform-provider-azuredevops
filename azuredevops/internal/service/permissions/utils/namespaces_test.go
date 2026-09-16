@@ -749,10 +749,6 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Times(1)
 
 	// getAccessControlList => QueryAccessControlLists
-	var descriptorList []string
-	for _, identity := range projectIdentityList {
-		descriptorList = append(descriptorList, *identity.Descriptor)
-	}
 	securityClient.
 		EXPECT().
 		QueryAccessControlLists(clients.Ctx, gomock.Any()).

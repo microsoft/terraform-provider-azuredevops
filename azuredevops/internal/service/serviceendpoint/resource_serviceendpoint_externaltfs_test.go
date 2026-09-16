@@ -58,9 +58,8 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 		&externalTfsTestServiceEndpoint,
 	)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointExternalTFS(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointExternalTFS(resourceData)
 
-	require.Nil(t, err)
 	require.Equal(t, externalTfsTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, externalTfsTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 }
@@ -147,7 +146,7 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
