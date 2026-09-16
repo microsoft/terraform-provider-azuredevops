@@ -13,26 +13,21 @@ Instead, this document focuses on what makes testing for this project unique.
 
 # Authoring Tests
 
-The Azure DevOps provider applies an approach to separate and group tests by using GO build tags or build constraints. [GO build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints).
+`_test.go` files **must not** carry a build tag. The provider used to group tests with
+[GO build constraints](https://golang.org/pkg/go/build/#hdr-Build_Constraints), but the
+tags were dropped from the acceptance tests in #1436 and from the unit tests in #1439,
+because a tagged test file is skipped unless the tag is passed explicitly, which is easy
+to get wrong and left most of the suite out of CI.
 
-Thus each `_test.go` files must include a build tag with the following characteristics:
+Acceptance tests are still kept out of a normal `go test` run, but by their own guards
+rather than by a build tag: they live in `azuredevops/internal/acceptancetests`, they are
+named `TestAcc...`, and `resource.Test` skips them unless `TF_ACC` is set.
 
-1. The ``// +build`` constraint must include a tag named **all**.
-2. The ``// +build`` constraint must include a tag named after the terraform resource or data source which is under test in the specific `_test.go` file.
-3. After the initial line starting with ``// +build``, which defines the available build tags, another line must be added just below the first line, which adds, as a minimum, an exclude tag to the build tag defined in 2. that allows to skip all tests inside the `_test.go` file.
+To run a subset of the tests, select them by name with `go test -run`:
 
-   **Example:**
-
-   ```go
-   // +build all core data_sources data_git_repositories
-   // +build !exclude_data_sources !exclude_data_git_repositories
-
-   package azuredevops
-   ```
-
-4. Other build tags can be added as will. The administrators of the Azure DevOps Terraform Provider reserve the right to assign certain tags in the future to organize tests into logical groups.
-
-`_test.go` files which contain test helper routines **must not** include any build tag. Otherwise those routines aren't available during a test run because the GO compiler i.e. `go test` will only honor files that either contain the specified build tag or does not contain any build tag at all.
+```bash
+$ go test ./azuredevops/internal/service/core/... -run TestProject
+```
 
 If HCL code must be created for performing acceptance tests, add a function to `azuredevops/internal/acceptancetests/commons_hcl.go` and try to reuse existing definitions.
 
@@ -59,13 +54,11 @@ The unit tests are executed whenever `./scripts/build.sh` is run. This can be ru
 $ ./scripts/unittest.sh
 ```
 
-To run only unit tests for a specific resource or data source add the name of the build tag for this Terraform object as parameter to the `unittest.sh` script.
+To run only the unit tests for a specific resource or data source, select them by name:
 
 ```bash
-$ ./scripts/unittest.sh resource_project
+$ go test ./azuredevops/internal/service/core/... -run TestProject
 ```
-
-To run unit tests for multiple resources or data sources or for a logical group of tests you can specify multiple parameters to `unittest.sh`.
 
 **Azure DevOps Client SDK Mocks**
 
@@ -120,13 +113,12 @@ $ export AZDO_GITHUB_SERVICE_CONNECTION_PAT="..."
 $ ./scripts/acctest.sh
 ```
 
-To run only acceptance tests for a specific resource or data source add the name of the build tag for this Terraform object as parameter to the `acctest.sh` script.
+To run only the acceptance tests for a specific resource or data source, select them by
+name:
 
 ```bash
-$ ./scripts/acctest.sh resource_project
+$ TF_ACC=1 go test ./azuredevops/internal/acceptancetests/ -v -timeout 120m -run TestAccProject
 ```
-
-To run acceptance tests for multiple resources or data sources or for a logical group of tests you can specify multiple parameters to `acctest.sh`.
 
 **Writing an acceptance test**
 

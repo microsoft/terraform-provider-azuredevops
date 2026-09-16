@@ -15,7 +15,7 @@
             "env": {
                 "TF_ACC": "1"
             },
-            "buildFlags": "-v -tags=all",
+            "buildFlags": "-v",
             "showLog": true,
             "envFile": "${workspaceFolder}/.env"
         }

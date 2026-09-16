@@ -140,7 +140,7 @@ The several options to run the tests are:
 * Run a subset using a prefix
 
   ```sh
-  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create' TESTTAGS='resource_build_definition'
+  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create'
   ```
 
 * With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test
