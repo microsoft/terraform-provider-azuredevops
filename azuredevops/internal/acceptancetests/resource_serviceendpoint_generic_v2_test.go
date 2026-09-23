@@ -43,7 +43,7 @@ func TestAccServiceEndpointGenericV2_Basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization_parameters"},
+				ImportStateVerifyIgnore: []string{"authorization_parameters", "validate_input"},
 			},
 		},
 	})
@@ -114,7 +114,7 @@ func TestAccServiceEndpointGenericV2_UsernamePassword(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization_parameters"},
+				ImportStateVerifyIgnore: []string{"authorization_parameters", "validate_input"},
 			},
 		},
 	})
@@ -149,7 +149,7 @@ func TestAccServiceEndpointGenericV2_SharedProjects(t *testing.T) {
 				ImportState:             true,
 				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfSvcEpNode),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"authorization_parameters"},
+				ImportStateVerifyIgnore: []string{"authorization_parameters", "validate_input"},
 			},
 		},
 	})
@@ -273,6 +273,8 @@ resource "azuredevops_serviceendpoint_generic_v2" "test" {
   description = "Managed by Terraform"
   type        = "%s"
   server_url  = "https://github.com"
+
+  validate_input = true
 
   authorization_scheme = "Token"
   authorization_parameters = {
