@@ -50,6 +50,8 @@ The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/d
 * `update` - (Defaults to 5 minutes) Used when updating the Service Principal Entitlement.
 * `delete` - (Defaults to 5 minutes) Used when deleting the Service Principal Entitlement.
 
+~> **Note** Entra ID replicates newly created service principals into Azure DevOps asynchronously. Until replication completes the entitlement API rejects the principal with `VS403283: Could not add user '<object id>' at this time`, which is common when the service principal is created in the same Terraform run. Creation retries this error until the `create` timeout expires; increase the timeout if your tenant replicates slowly.
+
 ## Import
 
 Service Principal Entitlements can be imported using the `resource id`.
