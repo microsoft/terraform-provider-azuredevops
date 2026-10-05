@@ -1,7 +1,3 @@
-//go:build (all || resource_workitemtrackingprocess || resource_workitemtrackingprocess_inherited_state) && !exclude_resource_workitemtrackingprocess
-// +build all resource_workitemtrackingprocess resource_workitemtrackingprocess_inherited_state
-// +build !exclude_resource_workitemtrackingprocess
-
 package workitemtrackingprocess
 
 import (
@@ -83,7 +79,6 @@ func TestInheritedState_Create(t *testing.T) {
 			assert.Contains(t, diags[0].Summary, tt.expectedError)
 		})
 	}
-
 }
 
 func TestInheritedState_Import(t *testing.T) {

@@ -1,7 +1,3 @@
-//go:build (all || permissions || resource_build_folder_permissions) && (!exclude_permissions || !resource_build_folder_permissions)
-// +build all permissions resource_build_folder_permissions
-// +build !exclude_permissions !resource_build_folder_permissions
-
 package permissions
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -26,8 +22,6 @@ import (
  */
 
 var buildFolderProjectID = "9083e944-8e9e-405e-960a-c80180aa71e6"
-
-var buildFolderToken = fmt.Sprintf("%s", buildFolderProjectID)
 
 var (
 	buildFolderPath      = "a/b/c"

@@ -1,7 +1,3 @@
-//go:build (all || resource_resource_authorization) && !exclude_resource_authorization
-// +build all resource_resource_authorization
-// +build !exclude_resource_authorization
-
 package build
 
 // The tests in this file use the mock clients in mock_client.go to mock out

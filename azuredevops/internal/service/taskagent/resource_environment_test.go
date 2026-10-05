@@ -1,7 +1,3 @@
-//go:build (all || resource_environment) && !exclude_resource_environment
-// +build all resource_environment
-// +build !exclude_resource_environment
-
 package taskagent
 
 import (
@@ -144,7 +140,8 @@ func TestEnvironment_UpdateEnvironment_UpdateAndRead(t *testing.T) {
 	err := resourceEnvironmentUpdate(resourceData, clients)
 	require.Nil(t, err)
 
-	updatedEnvironment, _ := expandEnvironment(resourceData)
+	updatedEnvironment, err := expandEnvironment(resourceData)
+	require.NoError(t, err)
 	require.Equal(t, environmentToUpdate.Id, updatedEnvironment.Id)
 	require.Equal(t, environmentToUpdate.Name, updatedEnvironment.Name)
 	require.Equal(t, environmentToUpdate.Description, updatedEnvironment.Description)

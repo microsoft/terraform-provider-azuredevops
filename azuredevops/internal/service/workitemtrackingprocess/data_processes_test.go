@@ -1,7 +1,3 @@
-//go:build (all || data_sources || data_workitemtrackingprocess || data_workitemtrackingprocess_processes) && !exclude_data_sources
-// +build all data_sources data_workitemtrackingprocess data_workitemtrackingprocess_processes
-// +build !exclude_data_sources
-
 package workitemtrackingprocess
 
 import (

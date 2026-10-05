@@ -1,6 +1,3 @@
-//go:build all || utils || classification_helper
-// +build all utils classification_helper
-
 package utils
 
 import (

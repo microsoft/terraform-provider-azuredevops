@@ -1,7 +1,3 @@
-//go:build (all || resource_service_principal_entitlement) && !exclude_resource_service_principal_entitlement
-// +build all resource_service_principal_entitlement
-// +build !exclude_resource_service_principal_entitlement
-
 package memberentitlementmanagement
 
 import (
@@ -291,7 +287,7 @@ func TestServicePrincipalEntitlement_Create_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -347,7 +343,7 @@ func TestServicePrincipalEntitlement_Create_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 
 	memberEntitlementClient.
@@ -389,7 +385,7 @@ func TestServicePrincipalEntitlement_Update_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -448,7 +444,7 @@ func TestServicePrincipalEntitlement_Update_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 
 	memberEntitlementClient.

@@ -1,7 +1,3 @@
-//go:build (all || wiki || resource_wiki) && !exclude_resource_wiki
-// +build all wiki resource_wiki
-// +build !exclude_resource_wiki
-
 package wiki
 
 import (

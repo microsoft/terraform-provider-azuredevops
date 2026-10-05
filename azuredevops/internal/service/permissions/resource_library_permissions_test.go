@@ -1,7 +1,3 @@
-//go:build (all || permissions || resource_secure_file_permissions) && (!exclude_permissions || !resource_secure_file_permissions)
-// +build all permissions resource_secure_file_permissions
-// +build !exclude_permissions !resource_secure_file_permissions
-
 package permissions
 
 // The tests in this file use the mock clients in mock_client.go to mock out

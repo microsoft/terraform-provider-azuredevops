@@ -1,7 +1,3 @@
-//go:build (all || core || resource_group_membership) && !exclude_resource_group_membership
-// +build all core resource_group_membership
-// +build !exclude_resource_group_membership
-
 package graph
 
 import (

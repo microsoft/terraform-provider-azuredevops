@@ -1,7 +1,3 @@
-//go:build (all || policy) && !exclude_policy
-// +build all policy
-// +build !exclude_policy
-
 package branch
 
 // The tests in this file use the mock clients in mock_client.go to mock out

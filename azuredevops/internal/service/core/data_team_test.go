@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_team) && (!exclude_data_sources || !exclude_data_team)
-// +build all core data_sources data_team
-// +build !exclude_data_sources !exclude_data_team
-
 package core
 
 import (

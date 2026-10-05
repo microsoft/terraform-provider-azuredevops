@@ -73,6 +73,14 @@ linters:
     presets:
       - common-false-positives
       - std-error-handling
+    rules:
+      # Resources that still register the non-context CRUD callbacks can only be driven
+      # through the deprecated schema.Resource.{Create,Read,Update,Delete} fields, so
+      # their unit tests cannot avoid the deprecation warning.
+      - path: _test\.go
+        text: 'SA1019: (r|testResource)\.(Create|Read|Update|Delete) is deprecated'
+        linters:
+          - staticcheck
 
   settings:
     errcheck:

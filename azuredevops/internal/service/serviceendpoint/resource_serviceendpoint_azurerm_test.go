@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_azurerm) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_azurerm
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (
@@ -271,7 +267,8 @@ func TestServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
 			resourceData.Set("credentials", credentials)
 		}
 		flattenServiceEndpointAzureRM(resourceData, &resource)
-		serviceEndpointAfterRoundTrip, _ := expandServiceEndpointAzureRM(resourceData)
+		serviceEndpointAfterRoundTrip, err := expandServiceEndpointAzureRM(resourceData)
+		require.NoError(t, err)
 
 		require.Equal(t, resource, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, azurermTestServiceEndpointAzureRMProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
@@ -302,7 +299,6 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 
 		err := r.Create(resourceData, clients)
 		require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
-
 	}
 }
 
@@ -428,7 +424,7 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 			EXPECT().
 			DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 			Return(errors.New("DeleteServiceEndpoint() Failed")).
-			Times(1)
+			Times(3)
 
 		err := r.Delete(resourceData, clients)
 		require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")
@@ -513,7 +509,7 @@ func TestServiceEndpointAzureRM_UpdateWithValidate_DoesNotSwallowError(t *testin
 //		Azure DevOps API as an indicator to "not update" the field. The resulting behavior is that
 //		this Terraform Resource will be able to update the Service Endpoint without needing to
 //		pass the password along in each request.
-//func TestServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
+// func TestServiceEndpointAzureRM_ExpandHandlesMissingSpnKeyInAPIResponse(t *testing.T) {
 //	// step (1)
 //	endpoint := getManualAuthServiceEndpoint()
 //	resourceData := getResourceData(t, endpoint)

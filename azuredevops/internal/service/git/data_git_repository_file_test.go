@@ -1,7 +1,3 @@
-//go:build (all || git || data_sources || data_git_repository_file) && (!exclude_data_sources || !exclude_git || !exclude_data_git_repository_file)
-// +build all git data_sources data_git_repository_file
-// +build !exclude_data_sources !exclude_git !exclude_data_git_repository_file
-
 package git
 
 import (
