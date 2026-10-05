@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
@@ -26,7 +27,7 @@ type Client interface {
 	ListSecurityRoleDefinitions(ctx context.Context, args *ListSecurityRoleDefinitionsArgs) (*[]SecurityRoleDefinition, error)
 	ListSecurityRoleAssignments(ctx context.Context, args *ListSecurityRoleAssignmentsArgs) (*[]SecurityRoleAssignment, error)
 	GetSecurityRoleAssignment(ctx context.Context, args *GetSecurityRoleAssignmentArgs) (*SecurityRoleAssignment, error)
-	SetSecurityRoleAssignment(ctx context.Context, args *SetSecurityRoleAssignmentArgs) error
+	SetSecurityRoleAssignment(ctx context.Context, args *SetSecurityRoleAssignmentArgs) (*SecurityRoleAssignment, error)
 }
 
 type ClientImpl struct {
@@ -143,9 +144,11 @@ type SetSecurityRoleAssignmentArgs struct {
 	RoleName   *string
 }
 
-func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *SetSecurityRoleAssignmentArgs) error {
+// SetSecurityRoleAssignment returns the assignment for args.IdentityId as echoed
+// back by the service, or nil if the response does not contain it.
+func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *SetSecurityRoleAssignmentArgs) (*SecurityRoleAssignment, error) {
 	if args == nil {
-		return &azuredevops.ArgumentNilError{ArgumentName: "args.ScopeId"}
+		return nil, &azuredevops.ArgumentNilError{ArgumentName: "args.ScopeId"}
 	}
 	routeValues := make(map[string]string)
 	resId := args.ResourceId
@@ -162,32 +165,41 @@ func (client *ClientImpl) SetSecurityRoleAssignment(ctx context.Context, args *S
 
 	body, marshalErr := json.Marshal(bodyParams)
 	if marshalErr != nil {
-		return marshalErr
+		return nil, marshalErr
 	}
 
 	locationId, err := uuid.Parse("9461c234-c84c-4ed2-b918-2f0f92ad0a35")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := client.Client.Send(ctx, http.MethodPut, locationId, "7.1-preview.1", routeValues, nil, bytes.NewReader(body), "application/json", "", nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp != nil && resp.Body != nil {
 		bodyBytes, readErr := io.ReadAll(resp.Body)
 		if readErr == nil {
 			var result struct {
-				Count int `json:"count"`
+				Count int                      `json:"count"`
+				Value []SecurityRoleAssignment `json:"value"`
 			}
-			if json.Unmarshal(bodyBytes, &result) == nil && result.Count == 0 {
-				return fmt.Errorf("the identity was not recognized by Azure DevOps. Ensure you are using the internal identity ID (storage key).")
+			if json.Unmarshal(bodyBytes, &result) == nil {
+				if result.Count == 0 {
+					return nil, fmt.Errorf("the identity was not recognized by Azure DevOps. Ensure you are using the internal identity ID (storage key).")
+				}
+				for i := range result.Value {
+					a := result.Value[i]
+					if a.Identity != nil && a.Identity.ID != nil && strings.EqualFold(*a.Identity.ID, args.IdentityId.String()) {
+						return &a, nil
+					}
+				}
 			}
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 // Arguments for the SetSecurityRoleAssignment function
