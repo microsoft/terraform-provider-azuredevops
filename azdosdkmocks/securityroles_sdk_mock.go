@@ -96,11 +96,12 @@ func (mr *MockSecurityrolesClientMockRecorder) ListSecurityRoleDefinitions(ctx, 
 }
 
 // SetSecurityRoleAssignment mocks base method.
-func (m *MockSecurityrolesClient) SetSecurityRoleAssignment(ctx context.Context, args *securityroles.SetSecurityRoleAssignmentArgs) error {
+func (m *MockSecurityrolesClient) SetSecurityRoleAssignment(ctx context.Context, args *securityroles.SetSecurityRoleAssignmentArgs) (*securityroles.SecurityRoleAssignment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetSecurityRoleAssignment", ctx, args)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*securityroles.SecurityRoleAssignment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SetSecurityRoleAssignment indicates an expected call of SetSecurityRoleAssignment.

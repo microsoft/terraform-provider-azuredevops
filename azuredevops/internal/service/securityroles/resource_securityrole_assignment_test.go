@@ -52,7 +52,7 @@ func TestSecurityRoleAssignment_Create_DoesNotSwallowError(t *testing.T) {
 	securityrolesClient.
 		EXPECT().
 		SetSecurityRoleAssignment(clients.Ctx, &expectedArgs).
-		Return(fmt.Errorf("invalid UUID length")).
+		Return(nil, fmt.Errorf("invalid UUID length")).
 		Times(1)
 
 	err := r.Create(resourceData, clients)
@@ -120,4 +120,37 @@ func TestSecurityRoleAssignment_Delete_DoesNotSwallowError(t *testing.T) {
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "invalid UUID length")
+}
+
+// verifies that create does not wait on the (eventually consistent) list endpoint
+// when the PUT response already confirms the assignment
+func TestSecurityRoleAssignment_Create_TrustsConfirmingSetResponse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	r := ResourceSecurityRoleAssignment()
+	resourceData := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+		"role_name":   SecurityRoleAssignmentRole,
+		"identity_id": SecurityRoleAssignmentIdentityID.String(),
+		"resource_id": SecurityRoleAssignmentResourceID,
+		"scope":       SecurityRoleAssignmentScope,
+	})
+
+	securityrolesClient := azdosdkmocks.NewMockSecurityrolesClient(ctrl)
+	clients := &client.AggregatedClient{SecurityRolesClient: securityrolesClient, Ctx: context.Background()}
+
+	identityID := SecurityRoleAssignmentIdentityID.String()
+	securityrolesClient.
+		EXPECT().
+		SetSecurityRoleAssignment(clients.Ctx, gomock.Any()).
+		Return(&securityroles.SecurityRoleAssignment{
+			Identity: &securityroles.SecurityRoleIdentity{ID: &identityID},
+			Role:     &securityroles.SecurityRoleDefinition{Name: &SecurityRoleAssignmentRole, Scope: &SecurityRoleAssignmentScope},
+		}, nil).
+		Times(1)
+	// No GetSecurityRoleAssignment expectation: any call to it fails the test.
+
+	err := r.Create(resourceData, clients)
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf("%s/%s/%s", SecurityRoleAssignmentScope, SecurityRoleAssignmentResourceID, identityID), resourceData.Id())
 }

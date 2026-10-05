@@ -69,7 +69,7 @@ func resourceSecurityRoleAssignmentCreateOrUpdate(d *schema.ResourceData, m inte
 		return fmt.Errorf("parsing identity_id: %+v", err)
 	}
 
-	err = clients.SecurityRolesClient.SetSecurityRoleAssignment(clients.Ctx, &securityroles.SetSecurityRoleAssignmentArgs{
+	assignment, err := clients.SecurityRolesClient.SetSecurityRoleAssignment(clients.Ctx, &securityroles.SetSecurityRoleAssignmentArgs{
 		Scope:      &scope,
 		ResourceId: &resourceId,
 		IdentityId: &identityId,
@@ -77,6 +77,14 @@ func resourceSecurityRoleAssignmentCreateOrUpdate(d *schema.ResourceData, m inte
 	})
 	if err != nil {
 		return err
+	}
+
+	// The roleassignments list can lag the PUT by hours or days while the grant is
+	// already enforced, so polling it would time out. Trust a PUT that confirms it.
+	if assignment != nil && assignment.Role != nil && assignment.Role.Name != nil &&
+		strings.EqualFold(*assignment.Role.Name, roleName) {
+		d.SetId(fmt.Sprintf("%s/%s/%s", scope, resourceId, identityId.String()))
+		return nil
 	}
 
 	stateConf := &retry.StateChangeConf{
