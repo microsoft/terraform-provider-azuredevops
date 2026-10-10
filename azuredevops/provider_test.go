@@ -42,6 +42,7 @@ func TestProvider_HasChildResources(t *testing.T) {
 		"azuredevops_feed_retention_policy",
 		"azuredevops_git_permissions",
 		"azuredevops_git_repository",
+		"azuredevops_git_repository_advanced_security",
 		"azuredevops_git_repository_branch",
 		"azuredevops_git_repository_file",
 		"azuredevops_group",
