@@ -1,0 +1,73 @@
+name: Upstream sync
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: App token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: release
+          fetch-depth: 0
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Sync main and open a PR for the latest upstream release
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          APP_SLUG: ${{ steps.token.outputs.app-slug }}
+          UPSTREAM: microsoft/terraform-provider-azuredevops
+        run: |
+          set -euo pipefail
+          bot_id=$(gh api "/users/${APP_SLUG}%5Bbot%5D" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${bot_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+          git remote add upstream "https://github.com/${UPSTREAM}.git"
+          git fetch --no-tags upstream main
+          git push origin refs/remotes/upstream/main:refs/heads/main
+
+          tag=$(gh api "repos/${UPSTREAM}/releases/latest" --jq .tag_name)
+          git fetch --no-tags upstream "refs/tags/${tag}:refs/tags/${tag}"
+          if git merge-base --is-ancestor "$tag" HEAD; then
+            echo "release already contains upstream ${tag}"
+            exit 0
+          fi
+
+          branch="sync/${tag}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            echo "${branch} already exists"
+            exit 0
+          fi
+
+          git switch -c "$branch"
+          if ! git merge --no-ff --no-edit -m "Merge upstream ${tag}" "$tag"; then
+            conflicts=$(git diff --name-only --diff-filter=U)
+            git merge --abort
+            title="Upstream ${tag}: merge conflict"
+            if [ "$(gh issue list --state open --search "\"${title}\" in:title" --json number --jq length)" = "0" ]; then
+              gh issue create --title "$title" --body "$(printf 'Merging upstream %s into release conflicts in:\n\n%s\n\nResolve locally on branch %s and open a PR to release.' "$tag" "$conflicts" "$branch")"
+            fi
+            exit 1
+          fi
+          git push origin "$branch"
+
+          delta=$(git diff --stat "$tag" HEAD)
+          gh pr create --base release --head "$branch" --title "Sync upstream ${tag}" --body "$(printf 'Merges upstream [%s](https://github.com/%s/releases/tag/%s) into release.\n\nRemaining fork changes compared to upstream %s (own changes merged upstream no longer show up here):\n\n%s\n\nAfter merge: tag %s-pk.1 on release.' "$tag" "$UPSTREAM" "$tag" "$tag" "$delta" "$tag")"
