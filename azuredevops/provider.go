@@ -76,6 +76,7 @@ func Provider() *schema.Provider {
 			"azuredevops_feed_retention_policy":                       feed.ResourceFeedRetentionPolicy(),
 			"azuredevops_git_permissions":                             permissions.ResourceGitPermissions(),
 			"azuredevops_git_repository":                              git.ResourceGitRepository(),
+			"azuredevops_git_repository_advanced_security":            git.ResourceGitRepositoryAdvancedSecurity(),
 			"azuredevops_git_repository_branch":                       git.ResourceGitRepositoryBranch(),
 			"azuredevops_git_repository_file":                         git.ResourceGitRepositoryFile(),
 			"azuredevops_group":                                       graph.ResourceGroup(),
