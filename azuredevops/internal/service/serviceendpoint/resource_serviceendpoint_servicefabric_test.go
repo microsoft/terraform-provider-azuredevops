@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_service_faric) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_service_faric
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (
@@ -143,7 +139,7 @@ func TestServiceEndpointServiceFabric_Delete_DoesNotSwallowError(t *testing.T) {
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")

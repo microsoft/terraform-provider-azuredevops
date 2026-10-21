@@ -1,7 +1,3 @@
-//go:build (all || resource_user_entitlement) && !exclude_resource_user_entitlement
-// +build all resource_user_entitlement
-// +build !exclude_resource_user_entitlement
-
 package memberentitlementmanagement
 
 import (
@@ -72,7 +68,7 @@ func TestUserEntitlement_CreateUserEntitlement_WithPrincipalName(t *testing.T) {
 
 //
 //// if origin_id is "" and principal_name is "", an error will be reported.
-//func TestUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_PrincipalName(t *testing.T) {
+// func TestUserEntitlement_CreateUserEntitlement_Need_OriginID_Or_PrincipalName(t *testing.T) {
 //	ctrl := gomock.NewController(t)
 //	defer ctrl.Finish()
 //
@@ -360,7 +356,7 @@ func TestUserEntitlement_Create_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -416,7 +412,7 @@ func TestUserEntitlement_Create_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 
 	memberEntitlementClient.
@@ -458,7 +454,7 @@ func TestUserEntitlement_Update_TestErrorFormatting(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 	k1 := interface{}("9999")
 	v1 := interface{}("Error1")
@@ -517,7 +513,7 @@ func TestUserEntitlement_Update_TestEmptyErrors(t *testing.T) {
 		Ctx:                           context.Background(),
 	}
 
-	id, _ := uuid.NewUUID()
+	id := uuid.New()
 	expectedIsSuccess := false
 
 	memberEntitlementClient.

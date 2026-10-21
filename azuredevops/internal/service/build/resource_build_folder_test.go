@@ -1,13 +1,8 @@
-//go:build (all || resource_build_folder) && !exclude_resource_build_folder
-// +build all resource_build_folder
-// +build !exclude_resource_build_folder
-
 package build
 
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -85,7 +80,7 @@ func TestBuildFolder_Create_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildFolder().Schema, nil)
-	resourceData.SetId(fmt.Sprintf("%s", *testBuildFolder.Project))
+	resourceData.SetId(*testBuildFolder.Project)
 	resourceData.Set("project_id", testBuildFolder.Project)
 	resourceData.Set("path", testBuildFolder.Path)
 	resourceData.Set("description", testBuildFolder.Folder.Description)
@@ -108,7 +103,7 @@ func TestBuildFolder_Read_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildFolder().Schema, nil)
-	resourceData.SetId(fmt.Sprintf("%s", *testReadFolder.Project))
+	resourceData.SetId(*testReadFolder.Project)
 	resourceData.Set("project_id", testReadFolder.Project)
 	resourceData.Set("path", testReadFolder.Path)
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -130,7 +125,7 @@ func TestBuildFolder_Delete_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildFolder().Schema, nil)
-	resourceData.SetId(fmt.Sprintf("%s", *testDeleteFolder.Project))
+	resourceData.SetId(*testDeleteFolder.Project)
 	resourceData.Set("project_id", testDeleteFolder.Project)
 	resourceData.Set("path", testDeleteFolder.Path)
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
@@ -152,7 +147,7 @@ func TestBuildFolder_Update_DoesNotSwallowError(t *testing.T) {
 	defer ctrl.Finish()
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildFolder().Schema, nil)
-	resourceData.SetId(fmt.Sprintf("%s", *testUpdateFolder.Project))
+	resourceData.SetId(*testUpdateFolder.Project)
 	resourceData.Set("project_id", testUpdateFolder.Project)
 	resourceData.Set("path", testUpdateFolder.Path)
 	resourceData.Set("description", testUpdateFolder.Folder.Description)

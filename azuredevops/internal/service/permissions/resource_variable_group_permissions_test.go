@@ -1,7 +1,3 @@
-//go:build (all || permissions || resource_variable_group_permissions) && (!exclude_permissions || !resource_variable_group_permissions)
-// +build all permissions resource_variable_group_permissions
-// +build !exclude_permissions !resource_variable_group_permissions
-
 package permissions
 
 // The tests in this file use the mock clients in mock_client.go to mock out

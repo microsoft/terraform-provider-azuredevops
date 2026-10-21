@@ -4,6 +4,13 @@ set -euo pipefail
 
 . $(dirname $0)/commons.sh
 
+# Guard against the old tag based invocation. Since the build tags were removed the
+# argument would be silently ignored and every acceptance test would run, which
+# creates and destroys real resources.
+if [ "$#" -gt 0 ]; then
+    fatal "Selecting tests by build tag is no longer supported. Use 'go test -run <pattern>' or 'make testacc TESTARGS=-run=<pattern>' instead."
+fi
+
 info "Executing acceptance tests"
 (
     cd "$SOURCE_DIR"
@@ -16,5 +23,5 @@ info "Executing acceptance tests"
     #   - A `-run` parameter is used to target *only* tests starting with `TestAcc`. This prefix is
     #     recommended by Hashicorp and is documented here:
     #       https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html#test-files
-    TF_ACC=1 go test -timeout 120m -run ^TestAcc -tags "${*:-all}" -v $(go list ./... | grep acceptancetests) || fatal "Build finished in error due to failed tests"
+    TF_ACC=1 go test -timeout 120m -run ^TestAcc -v $(go list ./... | grep acceptancetests) || fatal "Build finished in error due to failed tests"
 )

@@ -1,7 +1,3 @@
-//go:build (all || resource_servicehook_webhook) && !exclude_subscriptions
-// +build all resource_servicehook_webhook
-// +build !exclude_subscriptions
-
 package servicehook
 
 import (
@@ -21,12 +17,6 @@ import (
 )
 
 var subscriptionWebhookID = uuid.New()
-var createdByID = uuid.New()
-var modifiedByID = uuid.New()
-var subscriberID = uuid.New()
-
-var enabledStatus = servicehooks.SubscriptionStatus("enabled")
-var onProbationStatus = servicehooks.SubscriptionStatus("onProbation")
 
 var testResourceSubscriptionWebhookTfs = []servicehooks.Subscription{
 	{

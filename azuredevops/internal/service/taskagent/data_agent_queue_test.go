@@ -1,6 +1,3 @@
-//go:build all || core || data_projects
-// +build all core data_projects
-
 package taskagent
 
 // The tests in this file use the mock clients in mock_client.go to mock out

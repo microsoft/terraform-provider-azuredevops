@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_users) && (!exclude_data_sources || !exclude_data_users)
-// +build all core data_sources data_users
-// +build !exclude_data_sources !exclude_data_users
-
 package graph
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -25,7 +21,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-var id, _ = uuid.Parse("00000000-0000-0000-0000-000000000000")
+var id = uuid.MustParse("00000000-0000-0000-0000-000000000000")
 
 var usrList1 = []graph.GraphUser{
 	{
@@ -82,6 +78,14 @@ var usrList2 = []graph.GraphUser{
 	},
 }
 
+// copyUsers returns a fresh copy of a fixture. dataUsersReadContext filters the slice
+// it is handed in place, so a shared fixture would leak into the next test.
+func copyUsers(users []graph.GraphUser) *[]graph.GraphUser {
+	out := make([]graph.GraphUser, len(users))
+	copy(out, users)
+	return &out
+}
+
 // verfies that the data source propagates an error from the API correctly
 func TestDataSourceUser_Read_TestDoesNotSwallowError(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -102,9 +106,9 @@ func TestDataSourceUser_Read_TestDoesNotSwallowError(t *testing.T) {
 		Return(nil, errors.New("ListUsers() Failed"))
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
-	err := dataUsersRead(resourceData, clients)
-	require.NotNil(t, err)
-	require.Contains(t, err.Error(), "ListUsers() Failed")
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.True(t, diags.HasError())
+	require.Contains(t, diags[len(diags)-1].Summary, "ListUsers() Failed")
 }
 
 func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
@@ -124,7 +128,7 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 			SubjectTypes: &[]string{},
 		}).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers:        &usrList1,
+			GraphUsers:        copyUsers(usrList1),
 			ContinuationToken: &[]string{"2"},
 		}, nil).
 		Times(1))
@@ -136,7 +140,7 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 			ContinuationToken: converter.String("2"),
 		}).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers:        &usrList2,
+			GraphUsers:        copyUsers(usrList2),
 			ContinuationToken: &[]string{""},
 		}, nil).
 		Times(1))
@@ -152,8 +156,8 @@ func TestDataSourceUser_Read_HandlesContinuationToken(t *testing.T) {
 	gomock.InOrder(testhelper.UnpackArray(calls)...)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 }
 
 // verifies that a single user can be read successfully
@@ -180,8 +184,8 @@ func TestDataSourceUser_Read_TestReadEmptyUser(t *testing.T) {
 		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 	users, ok := resourceData.GetOk("users")
 	require.False(t, ok)
 	require.NotNil(t, users)
@@ -209,7 +213,7 @@ func TestDataSourceUser_Read_TestFilterByPricipalName(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -224,8 +228,8 @@ func TestDataSourceUser_Read_TestFilterByPricipalName(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("principal_name", "DesireeMCollins@jourrapide.com")
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 	users, ok := resourceData.GetOk("users")
 	require.True(t, ok)
 	require.NotNil(t, users)
@@ -233,7 +237,7 @@ func TestDataSourceUser_Read_TestFilterByPricipalName(t *testing.T) {
 	require.True(t, ok)
 	require.NotNil(t, usersSet)
 	require.Equal(t, 1, usersSet.Len())
-	u, _ := flattenUser(&usrList1[0])
+	u := flattenUser(&usrList1[0])
 	require.True(t, usersSet.Contains(u))
 }
 
@@ -255,7 +259,7 @@ func TestDataSourceUser_Read_TestFilterByOrigin(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -270,8 +274,8 @@ func TestDataSourceUser_Read_TestFilterByOrigin(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin", "aad")
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 	users, ok := resourceData.GetOk("users")
 	require.True(t, ok)
 	require.NotNil(t, users)
@@ -311,7 +315,7 @@ func TestDataSourceUser_Read_TestFilterByOriginId(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -322,12 +326,12 @@ func TestDataSourceUser_Read_TestFilterByOriginId(t *testing.T) {
 			Links: "",
 			Value: &id,
 		}, nil).
-		Times(3)
+		Times(2)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin_id", "8c840d92-f19e-4dfe-8eab-5a1fd67a3a77")
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 	users, ok := resourceData.GetOk("users")
 	require.True(t, ok)
 	require.NotNil(t, users)
@@ -367,7 +371,7 @@ func TestDataSourceUser_Read_TestFilterByOriginOriginId(t *testing.T) {
 		EXPECT().
 		ListUsers(clients.Ctx, expectedArgs).
 		Return(&graph.PagedGraphUsers{
-			GraphUsers: &usrList1,
+			GraphUsers: copyUsers(usrList1),
 		}, nil).
 		Times(1)
 
@@ -378,13 +382,13 @@ func TestDataSourceUser_Read_TestFilterByOriginOriginId(t *testing.T) {
 			Links: "",
 			Value: &id,
 		}, nil).
-		Times(2)
+		Times(1)
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("origin", "aad")
 	resourceData.Set("origin_id", "8c840d92-f19e-4dfe-8eab-5a1fd67a3a77")
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 	users, ok := resourceData.GetOk("users")
 	require.True(t, ok)
 	require.NotNil(t, users)
@@ -448,8 +452,8 @@ func TestDataSourceUser_Read_TestFilterBySubjectType(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, DataUsers().Schema, nil)
 	resourceData.Set("subject_types", schema.NewSet(schema.HashString, []interface{}{"aad"}))
-	err := dataUsersRead(resourceData, clients)
-	require.Nil(t, err)
+	diags := dataUsersReadContext(clients.Ctx, resourceData, clients)
+	require.Nil(t, diags)
 	users, ok := resourceData.GetOk("users")
 	require.True(t, ok)
 	require.NotNil(t, users)
