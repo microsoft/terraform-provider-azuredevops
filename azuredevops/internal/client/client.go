@@ -33,6 +33,7 @@ import (
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/work"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtracking"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7/workitemtrackingprocess"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/advancedsecurity"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/dashboardextras"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/organization"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/utils/sdk/pipelineschecksextras"
@@ -49,6 +50,7 @@ import (
 // Azure DevOps client.
 type AggregatedClient struct {
 	OrganizationURL               string
+	AdvancedSecurityClient        advancedsecurity.Client
 	CoreClient                    core.Client
 	BuildClient                   build.Client
 	DashboardClient               dashboard.Client
@@ -125,6 +127,14 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 	if err != nil {
 		log.Printf("getAzdoClient(): dashboardClient.NewClient failed.")
 		return nil, err
+	}
+
+	// Advanced Security is not available on every Azure DevOps instance (e.g. Azure DevOps Server),
+	// so a missing client only fails the resources that use it.
+	advancedSecurityClient, err := advancedsecurity.NewClient(ctx, connection)
+	if err != nil {
+		log.Printf("getAzdoClient(): advancedsecurity.NewClient failed: %v", err)
+		advancedSecurityClient = nil
 	}
 
 	dashboardClientExtra, err := dashboardextras.NewClient(ctx, connection)
@@ -240,6 +250,7 @@ func GetAzdoClient(authProvider azuredevops.AuthProvider, organizationURL string
 
 	aggregatedClient := &AggregatedClient{
 		OrganizationURL:               organizationURL,
+		AdvancedSecurityClient:        advancedSecurityClient,
 		CoreClient:                    coreClient,
 		BuildClient:                   buildClient,
 		DashboardClient:               dashboardClient,
