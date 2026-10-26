@@ -203,8 +203,9 @@ func serviceEndpointGetArgs(d *schema.ResourceData) (*serviceendpoint.GetService
 		return nil, err
 	}
 	return &serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: serviceEndpointID,
-		Project:    converter.String(projectID.String()),
+		EndpointId:   serviceEndpointID,
+		Project:      converter.String(projectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}, nil
 }
 
