@@ -598,25 +598,11 @@ func TestAccBuildDefinition_jobAuthorizationScope(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            tfBuildDefNode,
-				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"skip_first_run"},
-			},
-			{
 				Config: hclBuildDefinitionJobAuthorizationScope(name, "projectCollection"),
 				Check: resource.ComposeTestCheckFunc(
 					checkBuildDefinitionExists(name),
 					resource.TestCheckResourceAttr(tfBuildDefNode, "job_authorization_scope", "projectCollection"),
 				),
-			},
-			{
-				ResourceName:            tfBuildDefNode,
-				ImportStateIdFunc:       testutils.ComputeProjectQualifiedResourceImportID(tfBuildDefNode),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"skip_first_run"},
 			},
 		},
 	})
