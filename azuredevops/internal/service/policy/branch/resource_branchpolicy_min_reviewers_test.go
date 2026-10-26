@@ -1,7 +1,3 @@
-//go:build (all || resource_branchpolicy_min_reviewers) && !exclude_resource_branchpolicy_min_reviewers
-// +build all resource_branchpolicy_min_reviewers
-// +build !exclude_resource_branchpolicy_min_reviewers
-
 package branch
 
 import (

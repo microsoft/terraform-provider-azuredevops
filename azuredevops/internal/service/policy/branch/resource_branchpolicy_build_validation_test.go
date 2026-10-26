@@ -1,7 +1,3 @@
-//go:build (all || resource_branchpolicy_build_validation) && !exclude_resource_branchpolicy_build_validation
-// +build all resource_branchpolicy_build_validation
-// +build !exclude_resource_branchpolicy_build_validation
-
 package branch
 
 import (

@@ -1,7 +1,3 @@
-//go:build (all || utils || securitynamespaces) && !exclude_securitynamespaces
-// +build all utils securitynamespaces
-// +build !exclude_securitynamespaces
-
 package utils
 
 import (
@@ -749,10 +745,6 @@ func TestSecurityNamespace_GetPrincipalPermissions_Verify(t *testing.T) {
 		Times(1)
 
 	// getAccessControlList => QueryAccessControlLists
-	var descriptorList []string
-	for _, identity := range projectIdentityList {
-		descriptorList = append(descriptorList, *identity.Descriptor)
-	}
 	securityClient.
 		EXPECT().
 		QueryAccessControlLists(clients.Ctx, gomock.Any()).

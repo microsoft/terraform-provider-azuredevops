@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_users) && (!exclude_data_sources || !exclude_data_users)
-// +build all core data_sources data_users
-// +build !exclude_data_sources !exclude_data_users
-
 package identity
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -43,7 +39,7 @@ func TestUserNotFound(t *testing.T) {
 
 	// Execute the function and check for the expected error
 	err := dataIdentitySourceUserRead(resourceData, clients)
-	require.Contains(t, err.Error(), " Finding user with filter")
+	require.Contains(t, err.Error(), "Finding user with filter")
 }
 
 func TestErrorNotSwallowed(t *testing.T) {
@@ -69,7 +65,7 @@ func TestErrorNotSwallowed(t *testing.T) {
 	// Execute the function and check for the expected error
 	err := dataIdentitySourceUserRead(resourceData, clients)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), " Finding user with filter")
+	require.Contains(t, err.Error(), "Finding user with filter")
 	require.Contains(t, err.Error(), "with filter "+searchFilter)
 }
 

@@ -1,7 +1,3 @@
-//go:build (all || core || resource_team) && !exclude_resource_team
-// +build all core resource_team
-// +build !exclude_resource_team
-
 package core
 
 import (
