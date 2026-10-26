@@ -1536,6 +1536,7 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 	}
 
 	queueStatus := build.DefinitionQueueStatus(d.Get("queue_status").(string))
+	jobAuthorizationScope := build.BuildAuthorizationScope(d.Get("job_authorization_scope").(string))
 
 	buildDefinition := build.BuildDefinition{
 		Id:       buildDefinitionReference,
@@ -1557,12 +1558,13 @@ func expandBuildDefinition(d *schema.ResourceData, meta interface{}) (*build.Bui
 		Process: &build.YamlProcess{
 			YamlFilename: converter.String(repository["yml_path"].(string)),
 		},
-		QueueStatus:    &queueStatus,
-		Type:           &build.DefinitionTypeValues.Build,
-		Quality:        &build.DefinitionQualityValues.Definition,
-		VariableGroups: expandVariableGroups(d),
-		Variables:      variables,
-		Triggers:       &buildTriggers,
+		QueueStatus:           &queueStatus,
+		Type:                  &build.DefinitionTypeValues.Build,
+		Quality:               &build.DefinitionQualityValues.Definition,
+		VariableGroups:        expandVariableGroups(d),
+		Variables:             variables,
+		Triggers:              &buildTriggers,
+		JobAuthorizationScope: &jobAuthorizationScope,
 	}
 
 	if agentPoolName, ok := d.GetOk("agent_pool_name"); ok {
