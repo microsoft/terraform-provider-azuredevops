@@ -198,6 +198,8 @@ func TestProvider_HasChildDataSources(t *testing.T) {
 		"azuredevops_user",
 		"azuredevops_users",
 		"azuredevops_variable_group",
+		"azuredevops_workitem",
+		"azuredevops_workitems",
 		"azuredevops_workitemtrackingprocess_process",
 		"azuredevops_workitemtrackingprocess_processes",
 		"azuredevops_workitemtrackingprocess_workitemtype",

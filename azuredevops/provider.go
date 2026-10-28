@@ -219,6 +219,8 @@ func Provider() *schema.Provider {
 			"azuredevops_user":                                  graph.DataUser(),
 			"azuredevops_users":                                 graph.DataUsers(),
 			"azuredevops_variable_group":                        taskagent.DataVariableGroup(),
+			"azuredevops_workitem":                              workitemtracking.DataWorkItem(),
+			"azuredevops_workitems":                             workitemtracking.DataWorkItems(),
 			"azuredevops_workitemtrackingprocess_process":       workitemtrackingprocess.DataProcess(),
 			"azuredevops_workitemtrackingprocess_processes":     workitemtrackingprocess.DataProcesses(),
 			"azuredevops_workitemtrackingprocess_workitemtype":  workitemtrackingprocess.DataWorkItemType(),
