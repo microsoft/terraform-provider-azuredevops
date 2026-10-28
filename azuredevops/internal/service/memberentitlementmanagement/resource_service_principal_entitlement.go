@@ -8,6 +8,7 @@ import (
 
 	"github.com/ahmetb/go-linq"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/microsoft/azure-devops-go-api/azuredevops/v7"
@@ -113,7 +114,7 @@ func ResourceServicePrincipalEntitlement() *schema.Resource {
 func resourceServicePrincipalEntitlementCreate(d *schema.ResourceData, m interface{}) error {
 	clients := m.(*client.AggregatedClient)
 	servicePrincipalEntitlement := expandServicePrincipalEntitlement(d)
-	addedServicePrincipalEntitlement, err := addServicePrincipalEntitlement(clients, servicePrincipalEntitlement)
+	addedServicePrincipalEntitlement, err := addServicePrincipalEntitlement(clients, servicePrincipalEntitlement, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("Creating service principal entitlement: %v", err)
 	}
@@ -251,23 +252,45 @@ func flattenServicePrincipalEntitlement(d *schema.ResourceData, servicePrincipal
 	}
 }
 
-func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
-	servicePrincipalEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.AddServicePrincipalEntitlementArgs{
-		ServicePrincipalEntitlement: servicePrincipalEntitlement,
+// servicePrincipalNotReplicatedErrorCode is returned when the service principal
+// is not yet known to Azure DevOps. The directory is replicated into Azure
+// DevOps asynchronously, so a principal created moments earlier - commonly in
+// the same Terraform run - is briefly invisible to the entitlement API. The
+// condition clears on its own, so it is retried rather than surfaced.
+const servicePrincipalNotReplicatedErrorCode = "VS403283"
+
+func addServicePrincipalEntitlement(clients *client.AggregatedClient, servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement, timeout time.Duration) (*memberentitlementmanagement.ServicePrincipalEntitlement, error) {
+	var added *memberentitlementmanagement.ServicePrincipalEntitlement
+
+	err := retry.RetryContext(clients.Ctx, timeout, func() *retry.RetryError {
+		servicePrincipalEntitlementsPostResponse, err := clients.MemberEntitleManagementClient.AddServicePrincipalEntitlement(clients.Ctx, memberentitlementmanagement.AddServicePrincipalEntitlementArgs{
+			ServicePrincipalEntitlement: servicePrincipalEntitlement,
+		})
+		if err != nil {
+			return retry.NonRetryableError(err)
+		}
+
+		if !*servicePrincipalEntitlementsPostResponse.IsSuccess {
+			opResults := []memberentitlementmanagement.ServicePrincipalEntitlementOperationResult{}
+			if servicePrincipalEntitlementsPostResponse.OperationResult != nil {
+				opResults = append(opResults, *servicePrincipalEntitlementsPostResponse.OperationResult)
+			}
+			apiErr := fmt.Errorf("Adding service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(&opResults))
+			if hasServicePrincipalEntitlementErrorCode(&opResults, servicePrincipalNotReplicatedErrorCode) {
+				log.Printf("[DEBUG] Service principal not yet replicated to Azure DevOps, retrying: %v", apiErr)
+				return retry.RetryableError(apiErr)
+			}
+			return retry.NonRetryableError(apiErr)
+		}
+
+		added = servicePrincipalEntitlementsPostResponse.ServicePrincipalEntitlement
+		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	if !*servicePrincipalEntitlementsPostResponse.IsSuccess {
-		opResults := []memberentitlementmanagement.ServicePrincipalEntitlementOperationResult{}
-		if servicePrincipalEntitlementsPostResponse.OperationResult != nil {
-			opResults = append(opResults, *servicePrincipalEntitlementsPostResponse.OperationResult)
-		}
-		return nil, fmt.Errorf("Adding service principal entitlement: %s", getServicePrincipalEntitlementAPIErrorMessage(&opResults))
-	}
-
-	return servicePrincipalEntitlementsPostResponse.ServicePrincipalEntitlement, nil
+	return added, nil
 }
 
 func importServicePrincipalEntitlement(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
@@ -324,6 +347,23 @@ func getServicePrincipalEntitlementAPIErrorMessage(operationResults *[]memberent
 			}).(string)
 	}
 	return errMsg
+}
+
+func hasServicePrincipalEntitlementErrorCode(operationResults *[]memberentitlementmanagement.ServicePrincipalEntitlementOperationResult, code string) bool {
+	if operationResults == nil {
+		return false
+	}
+	for _, opResult := range *operationResults {
+		if opResult.Errors == nil {
+			continue
+		}
+		for _, err := range *opResult.Errors {
+			if err.Key != nil && fmt.Sprintf("%v", *err.Key) == code {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func isServicePrincipalDeleted(servicePrincipalEntitlement *memberentitlementmanagement.ServicePrincipalEntitlement) bool {
