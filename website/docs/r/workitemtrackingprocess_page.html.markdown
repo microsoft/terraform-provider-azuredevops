@@ -18,8 +18,8 @@ resource "azuredevops_workitemtrackingprocess_process" "example" {
 }
 
 resource "azuredevops_workitemtrackingprocess_workitemtype" "example" {
-  process_id  = azuredevops_workitemtrackingprocess_process.example.id
-  name        = "example"
+  process_id = azuredevops_workitemtrackingprocess_process.example.id
+  name       = "example"
 }
 
 resource "azuredevops_workitemtrackingprocess_page" "example" {

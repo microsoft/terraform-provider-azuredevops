@@ -45,6 +45,9 @@ var ApprovalCheckSettings = map[string]interface{}{
 	"minRequiredApprovers":      1,
 	"requesterCannotBeApprover": true,
 	"approvers":                 approvers,
+	"definitionRef": map[string]interface{}{
+		"id": approvalDefinitionRefID,
+	},
 }
 
 var ApprovalCheckTest = pipelineschecksextras.CheckConfiguration{
@@ -59,7 +62,8 @@ var ApprovalCheckTest = pipelineschecksextras.CheckConfiguration{
 // verifies that the flatten/expand round trip yields the same branch control
 func TestCheckApproval_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckApproval().Schema, nil)
-	flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	err := flattenCheckApproval(resourceData, &ApprovalCheckTest, ApprovalCheckProjectID)
+	require.Nil(t, err)
 
 	resourceData.SetId(fmt.Sprintf("%d", *ApprovalCheckTest.Id))
 	ApprovalCheckAfterRoundTrip, projectID, err := expandCheckApproval(resourceData)
@@ -67,6 +71,27 @@ func TestCheckApproval_ExpandFlatten_Roundtrip(t *testing.T) {
 	require.Equal(t, ApprovalCheckTest, *ApprovalCheckAfterRoundTrip)
 	require.Equal(t, ApprovalCheckProjectID, projectID)
 	require.Nil(t, err)
+}
+
+func TestApprovalKindDefinitionRefMapping(t *testing.T) {
+	testCases := []struct {
+		approvalKind    string
+		definitionRefID string
+	}{
+		{approvalKindApproval, approvalDefinitionRefID},
+		{approvalKindPreCheck, preCheckDefinitionRefID},
+		{approvalKindPostCheck, postCheckDefinitionRefID},
+	}
+
+	for _, testCase := range testCases {
+		definitionRefID, err := definitionRefIDFromApprovalKind(testCase.approvalKind)
+		require.Nil(t, err)
+		require.Equal(t, testCase.definitionRefID, definitionRefID)
+
+		approvalKind, err := approvalKindFromDefinitionRefID(testCase.definitionRefID)
+		require.Nil(t, err)
+		require.Equal(t, testCase.approvalKind, approvalKind)
+	}
 }
 
 // verifies that if an error is produced on create, the error is not swallowed
