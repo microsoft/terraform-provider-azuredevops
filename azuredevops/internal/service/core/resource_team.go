@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/ahmetb/go-linq"
@@ -187,7 +188,7 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if err = waitForTeamStateChange(d, clients, projectID, teamID, teamData.Name, teamData.Description, memberSet, administratorSet, areaSet); err != nil {
+	if err = waitForTeamStateChange(d, clients, projectID, teamID, teamData.Name, teamData.Description, memberSet, administratorSet, areaSet, d.Timeout(schema.TimeoutCreate)); err != nil {
 		return err
 	}
 
@@ -350,7 +351,7 @@ func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if err := waitForTeamStateChange(d, clients, projectID, teamID, newTeamName, newDescription, memberSet, administratorSet, areaSet); err != nil {
+	if err := waitForTeamStateChange(d, clients, projectID, teamID, newTeamName, newDescription, memberSet, administratorSet, areaSet, d.Timeout(schema.TimeoutUpdate)); err != nil {
 		return err
 	}
 
@@ -375,7 +376,7 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamID string, name *string, description *string, memberSet *schema.Set, administratorSet *schema.Set, areaSet *schema.Set) error {
+func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedClient, projectID string, teamID string, name *string, description *string, memberSet *schema.Set, administratorSet *schema.Set, areaSet *schema.Set, waitTimeout time.Duration) error {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"Waiting"},
 		Target:  []string{"Synched"},
@@ -391,8 +392,16 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				return nil, "", fmt.Errorf("Reading team data: %+v", err)
 			}
 
-			bDescriptionUpdated := nil == description || *team.Description == *description
-			bNameUpdated := nil == name || *team.Name == *name
+			// The service trims surrounding whitespace when it stores name
+			// and description, so compare trimmed values. A missing value in
+			// the response is not worth waiting for; the read at the end of
+			// create/update records whatever the service returned.
+			bDescriptionUpdated := nil == description ||
+				nil == team.Description ||
+				strings.TrimSpace(*team.Description) == strings.TrimSpace(*description)
+			bNameUpdated := nil == name ||
+				nil == team.Name ||
+				strings.TrimSpace(*team.Name) == strings.TrimSpace(*name)
 
 			bAdministratorsUpdated := true
 			if administratorSet != nil {
@@ -400,7 +409,13 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				if err != nil {
 					return nil, "", fmt.Errorf("Reading team administrators: %+v", err)
 				}
-				bAdministratorsUpdated = actualAdministrators.Len() == administratorSet.Len()
+				// All configured administrators must be granted. The service
+				// can add ACEs of its own to the team token, so counting
+				// entries is not reliable.
+				bAdministratorsUpdated = actualAdministrators.Intersection(administratorSet).Len() == administratorSet.Len()
+				if bAdministratorsUpdated && actualAdministrators.Len() != administratorSet.Len() {
+					log.Printf("[WARN] team %s has %d administrators, %d configured", teamID, actualAdministrators.Len(), administratorSet.Len())
+				}
 			}
 
 			dashboards, err := clients.DashboardClient.GetDashboardsByProject(clients.Ctx, dashboard.GetDashboardsByProjectArgs{
@@ -410,9 +425,11 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			if err != nil {
 				return nil, "", fmt.Errorf("Reading Team dashboard: %+v", err)
 			}
+			// A new team starts with a single default dashboard. A nil list
+			// used to panic here.
 			dashboardUpdate := true
-			if dashboards == nil && len(*dashboards) == 0 {
-				dashboardUpdate = false
+			if dashboards == nil || len(*dashboards) == 0 {
+				log.Printf("[WARN] team %s has no dashboards yet", teamID)
 			}
 
 			bMembersUpdated := true
@@ -421,7 +438,13 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 				if err != nil {
 					return nil, "", fmt.Errorf("Reading team memberships: %+v", err)
 				}
-				bMembersUpdated = actualMemberships.Len() == memberSet.Len()
+				// All configured members must be present. The identity service
+				// can report extra or duplicate entries, so counting entries
+				// is not reliable.
+				bMembersUpdated = actualMemberships.Intersection(memberSet).Len() == memberSet.Len()
+				if bMembersUpdated && actualMemberships.Len() != memberSet.Len() {
+					log.Printf("[WARN] team %s has %d members, %d configured", teamID, actualMemberships.Len(), memberSet.Len())
+				}
 			}
 
 			bAreasUpdated := true
@@ -441,7 +464,7 @@ func waitForTeamStateChange(d *schema.ResourceData, clients *client.AggregatedCl
 			}
 			return state, state, nil
 		},
-		Timeout:                   30 * time.Minute,
+		Timeout:                   waitTimeout,
 		MinTimeout:                5 * time.Second,
 		Delay:                     5 * time.Second,
 		PollInterval:              10 * time.Second,
@@ -754,7 +777,9 @@ func getSubjectDescriptors(clients *client.AggregatedClient, members *[]string) 
 
 			if memberIdentities != nil && len(*memberIdentities) > 0 {
 				for _, memberIdentity := range *memberIdentities {
-					set.Add(*memberIdentity.SubjectDescriptor)
+					if memberIdentity.SubjectDescriptor != nil {
+						set.Add(*memberIdentity.SubjectDescriptor)
+					}
 				}
 			}
 		}
