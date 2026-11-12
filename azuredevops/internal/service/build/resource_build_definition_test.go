@@ -114,11 +114,12 @@ var testBuildDefinition = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
-	Type:           &build.DefinitionTypeValues.Build,
-	Quality:        &build.DefinitionQualityValues.Definition,
-	Triggers:       &[]interface{}{},
-	VariableGroups: &[]build.VariableGroup{},
+	QueueStatus:           &build.DefinitionQueueStatusValues.Enabled,
+	Type:                  &build.DefinitionTypeValues.Build,
+	Quality:               &build.DefinitionQualityValues.Definition,
+	Triggers:              &[]interface{}{},
+	VariableGroups:        &[]build.VariableGroup{},
+	JobAuthorizationScope: &build.BuildAuthorizationScopeValues.ProjectCollection,
 }
 
 // This definition matches the overall structure of what a configured Bitbucket git repository would
@@ -152,10 +153,11 @@ var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
-	Type:           &build.DefinitionTypeValues.Build,
-	Quality:        &build.DefinitionQualityValues.Definition,
-	VariableGroups: &[]build.VariableGroup{},
+	QueueStatus:           &build.DefinitionQueueStatusValues.Enabled,
+	Type:                  &build.DefinitionTypeValues.Build,
+	Quality:               &build.DefinitionQualityValues.Definition,
+	VariableGroups:        &[]build.VariableGroup{},
+	JobAuthorizationScope: &build.BuildAuthorizationScopeValues.ProjectCollection,
 }
 
 // This definition matches the overall structure of what a configured GitHub Enterprise git repository would
@@ -190,10 +192,11 @@ var testBuildDefinitionGitHubEnterpriseWithCITrigger = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
-	Type:           &build.DefinitionTypeValues.Build,
-	Quality:        &build.DefinitionQualityValues.Definition,
-	VariableGroups: &[]build.VariableGroup{},
+	QueueStatus:           &build.DefinitionQueueStatusValues.Enabled,
+	Type:                  &build.DefinitionTypeValues.Build,
+	Quality:               &build.DefinitionQualityValues.Definition,
+	VariableGroups:        &[]build.VariableGroup{},
+	JobAuthorizationScope: &build.BuildAuthorizationScopeValues.ProjectCollection,
 }
 
 // This definition matches the overall structure of what a configured Bitbucket git repository would
