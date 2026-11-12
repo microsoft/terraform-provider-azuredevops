@@ -141,6 +141,7 @@ func ResourceGitRepository() *schema.Resource {
 							Type:      schema.TypeString,
 							Optional:  true,
 							WriteOnly: true,
+							Sensitive: true,
 							RequiredWith: []string{
 								"initialization.0.source_url",
 								"initialization.0.source_type",

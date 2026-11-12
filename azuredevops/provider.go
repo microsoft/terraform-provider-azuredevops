@@ -44,6 +44,8 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"azuredevops_agent_pool":                                  taskagent.ResourceAgentPool(),
 			"azuredevops_agent_queue":                                 taskagent.ResourceAgentQueue(),
+			"azuredevops_analytics_permissions":                       permissions.ResourceAnalyticsPermissions(),
+			"azuredevops_analytics_views_permissions":                 permissions.ResourceAnalyticsViewsPermissions(),
 			"azuredevops_area":                                        workitemtracking.ResourceArea(),
 			"azuredevops_area_permissions":                            permissions.ResourceAreaPermissions(),
 			"azuredevops_branch_policy_auto_reviewers":                branch.ResourceBranchPolicyAutoReviewers(),
@@ -217,6 +219,8 @@ func Provider() *schema.Provider {
 			"azuredevops_user":                                  graph.DataUser(),
 			"azuredevops_users":                                 graph.DataUsers(),
 			"azuredevops_variable_group":                        taskagent.DataVariableGroup(),
+			"azuredevops_workitem":                              workitemtracking.DataWorkItem(),
+			"azuredevops_workitems":                             workitemtracking.DataWorkItems(),
 			"azuredevops_workitemtrackingprocess_process":       workitemtrackingprocess.DataProcess(),
 			"azuredevops_workitemtrackingprocess_processes":     workitemtrackingprocess.DataProcesses(),
 			"azuredevops_workitemtrackingprocess_workitemtype":  workitemtrackingprocess.DataWorkItemType(),

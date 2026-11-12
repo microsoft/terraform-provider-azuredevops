@@ -75,7 +75,9 @@ The following arguments are supported:
     | UPDATE_VISIBILITY            | Update project visibility                    |
     | CHANGE_PROCESS               | Change process of team project.              |
     | AGILETOOLS_BACKLOG           | Agile backlog management.                    |
-    | AGILETOOLS_PLANS             | Agile plans.                                 |
+    | AGILETOOLS_PLANS             | Manage delivery plans                        |
+
+~> **Note** The project **Permissions** page also shows permissions that belong to other security namespaces and therefore are managed by separate resources: `Create tag definition` by `azuredevops_tagging_permissions`, `View analytics` by `azuredevops_analytics_permissions`, and `Edit/Delete shared Analytics views` by `azuredevops_analytics_views_permissions`.
 
 ---
 

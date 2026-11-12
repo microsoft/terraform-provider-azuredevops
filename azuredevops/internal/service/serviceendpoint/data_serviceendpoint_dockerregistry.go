@@ -26,8 +26,9 @@ func DataResourceServiceEndpointDockerRegistry() *schema.Resource {
 			Computed: true,
 		},
 		"docker_password": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:      schema.TypeString,
+			Computed:  true,
+			Sensitive: true,
 		},
 		"docker_email": {
 			Type:     schema.TypeString,

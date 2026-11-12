@@ -581,6 +581,33 @@ func TestAccBuildDefinition_otherGitRepositoryAgentlessJob_complete(t *testing.T
 	})
 }
 
+func TestAccBuildDefinition_jobAuthorizationScope(t *testing.T) {
+	name := testutils.GenerateResourceName()
+
+	tfBuildDefNode := "azuredevops_build_definition.test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: checkBuildDefinitionDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: hclBuildDefinitionJobAuthorizationScope(name, "project"),
+				Check: resource.ComposeTestCheckFunc(
+					checkBuildDefinitionExists(name),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "job_authorization_scope", "project"),
+				),
+			},
+			{
+				Config: hclBuildDefinitionJobAuthorizationScope(name, "projectCollection"),
+				Check: resource.ComposeTestCheckFunc(
+					checkBuildDefinitionExists(name),
+					resource.TestCheckResourceAttr(tfBuildDefNode, "job_authorization_scope", "projectCollection"),
+				),
+			},
+		},
+	})
+}
+
 // Checks that the expected variable values exist in the state
 func checkForVariableValues(tfNode string, expectedVals ...string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -1304,4 +1331,24 @@ resource "azuredevops_build_definition" "test" {
   }
 }
 `, template, name, path)
+}
+
+func hclBuildDefinitionJobAuthorizationScope(name, scope string) string {
+	template := hclBuildDefinitionTemplate(name)
+	return fmt.Sprintf(`
+%s
+
+resource "azuredevops_build_definition" "test" {
+  project_id              = azuredevops_project.test.id
+  name                    = "%[2]s"
+  job_authorization_scope = "%[3]s"
+
+  repository {
+    repo_type   = "TfsGit"
+    repo_id     = azuredevops_git_repository.test.id
+    branch_name = azuredevops_git_repository.test.default_branch
+    yml_path    = "azure-pipelines.yml"
+  }
+}
+`, template, name, scope)
 }

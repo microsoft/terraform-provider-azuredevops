@@ -87,6 +87,7 @@ func ResourceServiceEndpointOpenshift() *schema.Resource {
 					"token": {
 						Type:         schema.TypeString,
 						Required:     true,
+						Sensitive:    true,
 						ValidateFunc: validation.StringIsNotWhiteSpace,
 					},
 				},

@@ -41,6 +41,7 @@ func ResourceServiceEndpointOctopusDeploy() *schema.Resource {
 		"api_key": {
 			Type:         schema.TypeString,
 			Required:     true,
+			Sensitive:    true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 
