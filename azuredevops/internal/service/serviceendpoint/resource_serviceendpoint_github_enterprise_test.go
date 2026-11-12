@@ -97,8 +97,9 @@ func TestServiceEndpointGitHubEnterprise_Read_DoesNotSwallowError(t *testing.T) 
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: ghesTestServiceEndpoint.Id,
-		Project:    converter.String(ghesTestServiceEndpointProjectID.String()),
+		EndpointId:   ghesTestServiceEndpoint.Id,
+		Project:      converter.String(ghesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

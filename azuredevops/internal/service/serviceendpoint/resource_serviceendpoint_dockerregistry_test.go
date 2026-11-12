@@ -101,8 +101,9 @@ func TestServiceEndpointDockerRegistry_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: dockerRegistryTestServiceEndpoint.Id,
-		Project:    converter.String(dockerRegistryTestServiceEndpointProjectID.String()),
+		EndpointId:   dockerRegistryTestServiceEndpoint.Id,
+		Project:      converter.String(dockerRegistryTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 
 	buildClient.

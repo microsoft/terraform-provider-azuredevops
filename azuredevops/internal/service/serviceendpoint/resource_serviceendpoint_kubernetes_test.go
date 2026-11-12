@@ -175,8 +175,9 @@ func TestServiceEndpointKubernetesForAzureSubscriptionReadDoesNotSwallowError(t 
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id,
-		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		EndpointId:   kubernetesTestServiceEndpointForAzureSubscription.Id,
+		Project:      converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
@@ -309,8 +310,9 @@ func TestServiceEndpointKubernetesForKubeconfigReadDoesNotSwallowError(t *testin
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id,
-		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		EndpointId:   kubernetesTestServiceEndpointForKubeconfig.Id,
+		Project:      converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
@@ -445,8 +447,9 @@ func TestServiceEndpointKubernetesForServiceAccountReadDoesNotSwallowError(t *te
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id,
-		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		EndpointId:   kubernetesTestServiceEndpointForServiceAccount.Id,
+		Project:      converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

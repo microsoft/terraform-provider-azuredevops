@@ -101,8 +101,9 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: rpTestServiceEndpoint.Id,
-		Project:    converter.String(rpTestServiceEndpointProjectID.String()),
+		EndpointId:   rpTestServiceEndpoint.Id,
+		Project:      converter.String(rpTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

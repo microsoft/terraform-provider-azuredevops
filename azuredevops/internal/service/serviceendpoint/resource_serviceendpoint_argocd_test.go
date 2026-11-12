@@ -144,8 +144,9 @@ func testServiceEndpointArgoCD_Read_DoesNotSwallowError(t *testing.T, ep *servic
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: ep.Id,
-		Project:    converter.String(id.String()),
+		EndpointId:   ep.Id,
+		Project:      converter.String(id.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

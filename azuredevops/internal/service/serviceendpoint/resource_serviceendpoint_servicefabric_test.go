@@ -102,8 +102,9 @@ func TestServiceEndpointServiceFabric_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: serviceFabricTestServiceEndpoint.Id,
-		Project:    converter.String(serviceFabricTestServiceEndpointProjectID.String()),
+		EndpointId:   serviceFabricTestServiceEndpoint.Id,
+		Project:      converter.String(serviceFabricTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

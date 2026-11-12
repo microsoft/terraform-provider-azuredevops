@@ -95,8 +95,9 @@ func TestServiceEndpointNpm_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: npmTestServiceEndpoint.Id,
-		Project:    converter.String(npmTestServiceEndpointProjectID.String()),
+		EndpointId:   npmTestServiceEndpoint.Id,
+		Project:      converter.String(npmTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

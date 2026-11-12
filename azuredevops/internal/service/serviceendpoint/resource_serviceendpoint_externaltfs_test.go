@@ -103,8 +103,9 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: externalTfsTestServiceEndpoint.Id,
-		Project:    converter.String(externalTfsTestServiceEndpointProjectID.String()),
+		EndpointId:   externalTfsTestServiceEndpoint.Id,
+		Project:      converter.String(externalTfsTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

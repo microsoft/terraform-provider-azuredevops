@@ -95,8 +95,9 @@ func TestServiceEndpointSonarQube_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: sonarQubeTestServiceEndpoint.Id,
-		Project:    converter.String(sonarQubeTestServiceEndpointProjectID.String()),
+		EndpointId:   sonarQubeTestServiceEndpoint.Id,
+		Project:      converter.String(sonarQubeTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().

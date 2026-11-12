@@ -384,8 +384,9 @@ func TestServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-			EndpointId: resource.Id,
-			Project:    converter.String(azurermTestServiceEndpointAzureRMProjectID.String()),
+			EndpointId:   resource.Id,
+			Project:      converter.String(azurermTestServiceEndpointAzureRMProjectID.String()),
+			ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 		}
 
 		buildClient.

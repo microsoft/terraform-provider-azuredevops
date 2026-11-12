@@ -101,8 +101,9 @@ func TestServiceEndpointAws_Read_DoesNotSwallowError(t *testing.T) {
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: awsTestServiceEndpoint.Id,
-		Project:    converter.String(awsTestServiceEndpointProjectID.String()),
+		EndpointId:   awsTestServiceEndpoint.Id,
+		Project:      converter.String(awsTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
