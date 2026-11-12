@@ -13,7 +13,6 @@
     ],
     "go.testFlags": [
         "-v",
-        "-tags=all",
         "-args",
         "-test.v"
     ],
@@ -29,9 +28,6 @@
         }
     },
     "gopls": {
-        "env": {
-            "GOFLAGS": "-tags=all"
-        },
         "usePlaceholders": true, // add parameter placeholders when completing a function
         // Experimental settings
         "completeUnimported": true, // autocomplete unimported packages

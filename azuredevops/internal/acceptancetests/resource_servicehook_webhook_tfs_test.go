@@ -1,5 +1,3 @@
-//go:build (all || resource_servicehook_webhook_tfs) && !exclude_servicehooks
-
 package acceptancetests
 
 import (

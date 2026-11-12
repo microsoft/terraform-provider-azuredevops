@@ -140,7 +140,7 @@ The several options to run the tests are:
 * Run a subset using a prefix
 
   ```sh
-  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create' TESTTAGS='resource_build_definition'
+  make testacc TESTARGS='-run=TestAccBuildDefinitionBitbucket_Create'
   ```
 
 * With VSCode Golang extension you can also run the tests using `run test`, `run package tests`, `run file tests` buttons above the test
@@ -187,7 +187,6 @@ The script is used to execute unit tests. The script is also executed by `build.
 | Parameter   | Description                                                                                                                       |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | -TestFilter | A GO regular expression which filters the test functions to be executed                                                           |
-| -Tag        | Tests in the provider project are organized with GO build tags. The parameter accepts a list of tag names which should be tested. |
 | -GoMod      | Control the `-mod` build parameter: Valid values: '' (Empty string), 'vendor', 'readonly'                                         |
 
 #### `scripts\acctest.ps1`
@@ -197,7 +196,6 @@ The script is used to execute unit tests.
 | Parameter   | Description                                                                                                                       |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | -TestFilter | A GO regular expression which filters the test functions to be executed                                                           |
-| -Tag        | Tests in the provider project are organized with GO build tags. The parameter accepts a list of tag names which should be tested. |
 | -GoMod      | Control the `-mod` build parameter: Valid values: '' (Empty string), 'vendor', 'readonly'                                         |
 
 #### `scripts\gofmtcheck.ps1`

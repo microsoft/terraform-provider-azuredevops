@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_group) && (!exclude_data_sources || !exclude_data_group)
-// +build all core data_sources data_group
-// +build !exclude_data_sources !exclude_data_group
-
 package graph
 
 import (
@@ -135,14 +131,14 @@ func TestGroupDataSource_HandlesContinuationToken_And_SelectsCorrectGroup(t *tes
 
 	firstListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor}
 	continuationToken := "continuation-token"
-	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String()})
+	firstListGroupCallResponse := createPaginatedResponse(continuationToken, groupMeta{name: "name1", descriptor: "descriptor1", origin: "vsts", originId: originID.String(), domain: "vstfs:///Classification/TeamProject/" + projectID.String()})
 	firstCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, firstListGroupCallArgs).
 		Return(firstListGroupCallResponse, nil)
 
 	secondListGroupCallArgs := graph.ListGroupsArgs{ScopeDescriptor: projectDescriptor, ContinuationToken: &continuationToken}
-	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String()})
+	secondListGroupCallResponse := createPaginatedResponse("", groupMeta{name: "name2", descriptor: "descriptor2", origin: "vsts", originId: uuid.New().String(), domain: "vstfs:///Classification/TeamProject/" + projectID.String()})
 	secondCall := graphClient.
 		EXPECT().
 		ListGroups(clients.Ctx, secondListGroupCallArgs).

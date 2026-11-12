@@ -1,7 +1,3 @@
-//go:build (all || resource_check_exclusive_lock) && !exclude_approvalsandchecks
-// +build all resource_check_exclusive_lock
-// +build !exclude_approvalsandchecks
-
 package approvalsandchecks
 
 import (
@@ -43,7 +39,7 @@ var CheckExclusiveLockTest = pipelineschecksextras.CheckConfiguration{
 func TestCheckExclusiveLock_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceCheckApproval().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
-	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
+	require.NoError(t, flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID))
 
 	CheckExclusiveLockAfterRoundTrip, projectID, err := expandExclusiveLock(resourceData)
 
@@ -60,7 +56,7 @@ func TestCheckExclusiveLock_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
-	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
+	require.NoError(t, flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID))
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
@@ -84,7 +80,7 @@ func TestCheckExclusiveLock_Read_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
-	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
+	require.NoError(t, flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID))
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
@@ -113,7 +109,7 @@ func TestCheckExclusiveLock_Delete_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
-	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
+	require.NoError(t, flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID))
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}
@@ -141,7 +137,7 @@ func TestCheckExclusiveLock_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceCheckExclusiveLock()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", CheckExclusiveLockID))
-	flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID)
+	require.NoError(t, flattenExclusiveLock(resourceData, &CheckExclusiveLockTest, CheckExclusiveLockProjectID))
 
 	pipelinesCheckClient := azdosdkmocks.NewMockPipelineschecksextrasClient(ctrl)
 	clients := &client.AggregatedClient{PipelinesChecksClientExtras: pipelinesCheckClient, Ctx: context.Background()}

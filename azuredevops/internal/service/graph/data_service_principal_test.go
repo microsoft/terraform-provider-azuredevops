@@ -1,7 +1,3 @@
-//go:build (all || core || data_sources || data_service_principal) && (!exclude_data_sources || !exclude_service_principal)
-// +build all core data_sources data_service_principal
-// +build !exclude_data_sources !exclude_service_principal
-
 package graph
 
 import (
@@ -43,7 +39,7 @@ func TestServicePrincipalNotFound(t *testing.T) {
 
 	// Execute the function and check for the expected error
 	err := dataSourceServicePrincipalRead(resourceData, clients)
-	require.Contains(t, err.Error(), " Finding service principal with filter")
+	require.Contains(t, err.Error(), "Finding service principal with filter")
 }
 
 // verifies that the translation for display_name to descriptor has proper error handling

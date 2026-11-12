@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_github_enterprise) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_github_enterprise
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (
@@ -56,9 +52,8 @@ func TestServiceEndpointGitHubEnterprise_ExpandFlatten_Roundtrip(t *testing.T) {
 	configureGhesAuthPersonal(resourceData)
 	flattenServiceEndpointGitHubEnterprise(resourceData, &ghesTestServiceEndpoint)
 
-	serviceEndpointAfterRoundTrip, err := expandServiceEndpointGitHubEnterprise(resourceData)
+	serviceEndpointAfterRoundTrip := expandServiceEndpointGitHubEnterprise(resourceData)
 
-	require.Nil(t, err)
 	require.Equal(t, ghesTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, ghesTestServiceEndpointProjectID, (*serviceEndpointAfterRoundTrip.ServiceEndpointProjectReferences)[0].ProjectReference.Id)
 }
@@ -102,8 +97,9 @@ func TestServiceEndpointGitHubEnterprise_Read_DoesNotSwallowError(t *testing.T) 
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: ghesTestServiceEndpoint.Id,
-		Project:    converter.String(ghesTestServiceEndpointProjectID.String()),
+		EndpointId:   ghesTestServiceEndpoint.Id,
+		Project:      converter.String(ghesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
@@ -139,7 +135,7 @@ func TestServiceEndpointGitHubEnterprise_Delete_DoesNotSwallowError(t *testing.T
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New("DeleteServiceEndpoint() Failed")).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), "DeleteServiceEndpoint() Failed")

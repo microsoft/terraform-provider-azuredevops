@@ -1,7 +1,3 @@
-//go:build (all || resource_build_definition) && !exclude_resource_build_definition
-// +build all resource_build_definition
-// +build !exclude_resource_build_definition
-
 package build
 
 import (
@@ -118,11 +114,12 @@ var testBuildDefinition = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
-	Type:           &build.DefinitionTypeValues.Build,
-	Quality:        &build.DefinitionQualityValues.Definition,
-	Triggers:       &[]interface{}{},
-	VariableGroups: &[]build.VariableGroup{},
+	QueueStatus:           &build.DefinitionQueueStatusValues.Enabled,
+	Type:                  &build.DefinitionTypeValues.Build,
+	Quality:               &build.DefinitionQualityValues.Definition,
+	Triggers:              &[]interface{}{},
+	VariableGroups:        &[]build.VariableGroup{},
+	JobAuthorizationScope: &build.BuildAuthorizationScopeValues.ProjectCollection,
 }
 
 // This definition matches the overall structure of what a configured Bitbucket git repository would
@@ -156,10 +153,11 @@ var testBuildDefinitionBitbucketWithCITrigger = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
-	Type:           &build.DefinitionTypeValues.Build,
-	Quality:        &build.DefinitionQualityValues.Definition,
-	VariableGroups: &[]build.VariableGroup{},
+	QueueStatus:           &build.DefinitionQueueStatusValues.Enabled,
+	Type:                  &build.DefinitionTypeValues.Build,
+	Quality:               &build.DefinitionQualityValues.Definition,
+	VariableGroups:        &[]build.VariableGroup{},
+	JobAuthorizationScope: &build.BuildAuthorizationScopeValues.ProjectCollection,
 }
 
 // This definition matches the overall structure of what a configured GitHub Enterprise git repository would
@@ -194,10 +192,11 @@ var testBuildDefinitionGitHubEnterpriseWithCITrigger = build.BuildDefinition{
 			Name: converter.String("BuildPoolName"),
 		},
 	},
-	QueueStatus:    &build.DefinitionQueueStatusValues.Enabled,
-	Type:           &build.DefinitionTypeValues.Build,
-	Quality:        &build.DefinitionQualityValues.Definition,
-	VariableGroups: &[]build.VariableGroup{},
+	QueueStatus:           &build.DefinitionQueueStatusValues.Enabled,
+	Type:                  &build.DefinitionTypeValues.Build,
+	Quality:               &build.DefinitionQualityValues.Definition,
+	VariableGroups:        &[]build.VariableGroup{},
+	JobAuthorizationScope: &build.BuildAuthorizationScopeValues.ProjectCollection,
 }
 
 // This definition matches the overall structure of what a configured Bitbucket git repository would
@@ -309,7 +308,7 @@ func TestBuildDefinition_Expand_RepoUrl_Github(t *testing.T) {
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
@@ -326,7 +325,7 @@ func TestBuildDefinition_Expand_RepoUrl_Bitbucket(t *testing.T) {
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 
 	bitBucketBuildDef := testBuildDefinitionBitbucket()
-	flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID))
 	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
@@ -343,7 +342,7 @@ func TestBuildDefinition_Expand_RepoUrl_GithubEnterprise(t *testing.T) {
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
 	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
 
-	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID))
 	buildDefinitionAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 	require.Nil(t, err)
@@ -356,7 +355,7 @@ func TestBuildDefinition_ValidatesServiceConnection_Bitbucket(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	bitBucketBuildDef := testBuildDefinitionBitbucket()
 	(*bitBucketBuildDef.Repository.Properties)["connectedServiceId"] = ""
-	flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &bitBucketBuildDef, testProjectID))
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -377,7 +376,7 @@ func TestBuildDefinition_ValidatesServiceConnection_GitHubEnterprise(t *testing.
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	gitHubEnterpriseBuildDef := testBuildDefinitionGitHubEnterprise()
 	(*gitHubEnterpriseBuildDef.Repository.Properties)["connectedServiceId"] = ""
-	flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &gitHubEnterpriseBuildDef, testProjectID))
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -400,7 +399,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_Bitbucket(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinitionBitbucketWithCITrigger, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinitionBitbucketWithCITrigger, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -423,7 +422,7 @@ func TestAzureDevOpsBuildDefinition_CITriggers_GitHubEnterprise(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinitionGitHubEnterpriseWithCITrigger, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinitionGitHubEnterpriseWithCITrigger, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -451,7 +450,7 @@ func TestBuildDefinition_ExpandFlatten_Roundtrip(t *testing.T) {
 	for _, triggerGroup := range triggerGroups {
 		testBuildDefinitionWithCustomTriggers := testBuildDefinition
 		testBuildDefinitionWithCustomTriggers.Triggers = &triggerGroup
-		flattenBuildDefinition(resourceData, &testBuildDefinitionWithCustomTriggers, testProjectID)
+		require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinitionWithCustomTriggers, testProjectID))
 		buildDefinitionYamlAfterRoundTrip, projectID, err := expandBuildDefinition(resourceData, clients)
 
 		require.Nil(t, err)
@@ -479,7 +478,7 @@ func TestBuildDefinition_Create_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -502,7 +501,7 @@ func TestBuildDefinition_Read_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -525,7 +524,7 @@ func TestBuildDefinition_Delete_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -548,7 +547,7 @@ func TestBuildDefinition_Update_DoesNotSwallowError(t *testing.T) {
 
 	resourceData := schema.TestResourceDataRaw(t, ResourceBuildDefinition().Schema, nil)
 	resourceData.SetId(fmt.Sprintf("%d", *testBuildDefinitionBitbucketWithCITrigger.Id))
-	flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID)
+	require.NoError(t, flattenBuildDefinition(resourceData, &testBuildDefinition, testProjectID))
 
 	buildClient := azdosdkmocks.NewMockBuildClient(ctrl)
 	clients := &client.AggregatedClient{BuildClient: buildClient, Ctx: context.Background()}
@@ -581,23 +580,35 @@ func TestExpandVariables_CatchesDuplicateVariables(t *testing.T) {
 	require.Contains(t, err.Error(), "Unexpectedly found duplicate variable with name")
 }
 
+// sortBuildDefinition returns a copy of b whose trigger filters are sorted, so that a
+// definition can be compared regardless of filter order. The trigger maps are copied
+// rather than sorted in place: the package level fixtures share them, and rewriting
+// them would leak into whichever test runs next.
 func sortBuildDefinition(b build.BuildDefinition) build.BuildDefinition {
 	if b.Triggers == nil {
 		return b
 	}
+	triggers := make([]interface{}, 0, len(*b.Triggers))
 	for _, t := range *b.Triggers {
-		if m, ok := t.(map[string]interface{}); ok {
-			if m2, ok := m["branchFilters"].([]interface{}); ok {
-				bf := tfhelper.ExpandStringList(m2)
-				sort.Strings(bf)
-				m["branchFilters"] = bf
-			}
-			if m3, ok := m["pathFilters"].([]interface{}); ok {
-				pf := tfhelper.ExpandStringList(m3)
-				sort.Strings(pf)
-				m["pathFilters"] = pf
+		m, ok := t.(map[string]interface{})
+		if !ok {
+			triggers = append(triggers, t)
+			continue
+		}
+
+		sorted := make(map[string]interface{}, len(m))
+		for k, v := range m {
+			sorted[k] = v
+		}
+		for _, key := range []string{"branchFilters", "pathFilters"} {
+			if filters, ok := sorted[key].([]interface{}); ok {
+				list := tfhelper.ExpandStringList(filters)
+				sort.Strings(list)
+				sorted[key] = list
 			}
 		}
+		triggers = append(triggers, sorted)
 	}
+	b.Triggers = &triggers
 	return b
 }

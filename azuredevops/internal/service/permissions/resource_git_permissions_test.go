@@ -1,7 +1,3 @@
-//go:build (all || permissions || resource_git_permissions) && (!exclude_permissions || !exclude_resource_project_permissions)
-// +build all permissions resource_git_permissions
-// +build !exclude_permissions !exclude_resource_project_permissions
-
 package permissions
 
 // The tests in this file use the mock clients in mock_client.go to mock out
@@ -28,12 +24,10 @@ var (
 	gitTokenProject       = fmt.Sprintf("repoV2/%s", gitProjectID)
 	gitRepositoryID       = "c629a0a4-926d-45d1-8095-6e2499cf3938"
 	gitTokenRepository    = fmt.Sprintf("%s/%s", gitTokenProject, gitRepositoryID)
-	gitTokenBranchAll     = fmt.Sprintf("%s/refs/heads", gitTokenRepository)
 	gitBranchNameValid    = "master"
 	gitTokenBranch        = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid))
 	gitSubBranchNameValid = "1.0.0"
 	gitTokenSubBranch     = fmt.Sprintf("%s/refs/heads/%s", gitTokenRepository, encodeBranchName(gitBranchNameValid)+"/"+encodeBranchName(gitSubBranchNameValid))
-	gitBranchNameInValid  = "@@invalid@@"
 )
 
 func TestGitPermissions_CreateGitToken(t *testing.T) {
@@ -102,7 +96,10 @@ func TestGitPermissions_CreateGitTokenWithBranch(t *testing.T) {
 }
 
 func encodeBranchName(branchName string) string {
-	ret, _ := converter.EncodeUtf16HexString(branchName)
+	ret, err := converter.EncodeUtf16HexString(branchName)
+	if err != nil {
+		panic(err)
+	}
 	return ret
 }
 

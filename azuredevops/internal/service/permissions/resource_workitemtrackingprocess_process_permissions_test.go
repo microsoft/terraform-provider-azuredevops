@@ -1,7 +1,3 @@
-//go:build (all || permissions || resource_workitemtrackingprocess_process_permissions) && (!exclude_permissions || !resource_workitemtrackingprocess_process_permissions)
-// +build all permissions resource_workitemtrackingprocess_process_permissions
-// +build !exclude_permissions !resource_workitemtrackingprocess_process_permissions
-
 package permissions
 
 import (

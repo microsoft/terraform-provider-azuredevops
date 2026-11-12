@@ -1,7 +1,3 @@
-//go:build (all || resource_serviceendpoint_kubernetes) && !exclude_serviceendpoints
-// +build all resource_serviceendpoint_kubernetes
-// +build !exclude_serviceendpoints
-
 package serviceendpoint
 
 import (
@@ -128,7 +124,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionExpandFlattenRoundtrip(t *
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription))
 
 	serviceEndpointAfterRoundTrip, err := expandServiceEndpointKubernetes(resourceData)
 
@@ -147,7 +143,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionCreateDoesNotSwallowError(
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -173,14 +169,15 @@ func TestServiceEndpointKubernetesForAzureSubscriptionReadDoesNotSwallowError(t 
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: kubernetesTestServiceEndpointForAzureSubscription.Id,
-		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		EndpointId:   kubernetesTestServiceEndpointForAzureSubscription.Id,
+		Project:      converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
@@ -202,7 +199,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionDeleteDoesNotSwallowError(
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -218,7 +215,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionDeleteDoesNotSwallowError(
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New(errMsgDeleteServiceEndpoint)).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), errMsgDeleteServiceEndpoint)
@@ -234,7 +231,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionUpdateDoesNotSwallowError(
 	kubernetesTestServiceEndpointForAzureSubscription := createkubernetesTestServiceEndpointForAzureSubscription()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForAzureSubscription.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForAzureSubscription))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -261,7 +258,7 @@ func TestServiceEndpointKubernetesForKubeconfigExpandFlattenRoundtrip(t *testing
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig))
 
 	serviceEndpointAfterRoundTrip, err := expandServiceEndpointKubernetes(resourceData)
 	require.Nil(t, err)
@@ -280,7 +277,7 @@ func TestServiceEndpointKubernetesForKubeconfigCreateDoesNotSwallowError(t *test
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -307,14 +304,15 @@ func TestServiceEndpointKubernetesForKubeconfigReadDoesNotSwallowError(t *testin
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: kubernetesTestServiceEndpointForKubeconfig.Id,
-		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		EndpointId:   kubernetesTestServiceEndpointForKubeconfig.Id,
+		Project:      converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
@@ -337,7 +335,7 @@ func TestServiceEndpointKubernetesForKubeconfigDeleteDoesNotSwallowError(t *test
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -352,7 +350,7 @@ func TestServiceEndpointKubernetesForKubeconfigDeleteDoesNotSwallowError(t *test
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New(errMsgDeleteServiceEndpoint)).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), errMsgDeleteServiceEndpoint)
@@ -369,7 +367,7 @@ func TestServiceEndpointKubernetesForKubeconfigUpdateDoesNotSwallowError(t *test
 	kubernetesTestServiceEndpointForKubeconfig := createkubernetesTestServiceEndpointForKubeconfig()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForKubeconfig.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForKubeconfig)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForKubeconfig))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -396,7 +394,7 @@ func TestServiceEndpointKubernetesForServiceAccountExpandFlattenRoundtrip(t *tes
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount))
 
 	serviceEndpointAfterRoundTrip, err := expandServiceEndpointKubernetes(resourceData)
 
@@ -416,7 +414,7 @@ func TestServiceEndpointKubernetesForServiceAccountCreateDoesNotSwallowError(t *
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -443,14 +441,15 @@ func TestServiceEndpointKubernetesForServiceAccountReadDoesNotSwallowError(t *te
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 	expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-		EndpointId: kubernetesTestServiceEndpointForServiceAccount.Id,
-		Project:    converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		EndpointId:   kubernetesTestServiceEndpointForServiceAccount.Id,
+		Project:      converter.String(kubernetesTestServiceEndpointProjectID.String()),
+		ActionFilter: &serviceendpoint.ServiceEndpointActionFilterValues.View,
 	}
 	buildClient.
 		EXPECT().
@@ -473,7 +472,7 @@ func TestServiceEndpointKubernetesForServiceAccountDeleteDoesNotSwallowError(t *
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -488,7 +487,7 @@ func TestServiceEndpointKubernetesForServiceAccountDeleteDoesNotSwallowError(t *
 		EXPECT().
 		DeleteServiceEndpoint(clients.Ctx, expectedArgs).
 		Return(errors.New(errMsgDeleteServiceEndpoint)).
-		Times(1)
+		Times(3)
 
 	err := r.Delete(resourceData, clients)
 	require.Contains(t, err.Error(), errMsgDeleteServiceEndpoint)
@@ -505,7 +504,7 @@ func TestServiceEndpointKubernetesForServiceAccountUpdateDoesNotSwallowError(t *
 	kubernetesTestServiceEndpointForServiceAccount := createkubernetesTestServiceEndpointForServiceAccount()
 	resourceData.Set("project_id", (*kubernetesTestServiceEndpointForServiceAccount.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String())
 	doBaseFlattening(resourceData, kubernetesTestServiceEndpointForServiceAccount)
-	flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount)
+	require.NoError(t, flattenServiceEndpointKubernetes(resourceData, kubernetesTestServiceEndpointForServiceAccount))
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

@@ -18,6 +18,17 @@ import (
 )
 
 // ResourceGroupMembership schema and implementation for group membership resource
+// These are variables rather than constants so that unit tests, which drive a mocked
+// client, do not have to wait for a back-off that can never shorten. The values used
+// in production are unchanged.
+var (
+	// membershipSyncDelay is how long to wait before checking the membership of a
+	// group for the first time.
+	membershipSyncDelay = 5 * time.Second
+	// membershipSyncMinTimeout is the shortest interval between two such checks.
+	membershipSyncMinTimeout = 5 * time.Second
+)
+
 func ResourceGroupMembership() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGroupMembershipCreate,
@@ -102,8 +113,8 @@ func resourceGroupMembershipCreate(d *schema.ResourceData, m interface{}) error 
 			return state, state, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutCreate),
-		MinTimeout:                5 * time.Second,
-		Delay:                     5 * time.Second,
+		MinTimeout:                membershipSyncMinTimeout,
+		Delay:                     membershipSyncDelay,
 		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
@@ -181,8 +192,8 @@ func resourceGroupMembershipUpdate(d *schema.ResourceData, m interface{}) error 
 			return state, state, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutUpdate),
-		MinTimeout:                5 * time.Second,
-		Delay:                     5 * time.Second,
+		MinTimeout:                membershipSyncMinTimeout,
+		Delay:                     membershipSyncDelay,
 		ContinuousTargetOccurence: 3,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
@@ -217,8 +228,8 @@ func resourceGroupMembershipDelete(d *schema.ResourceData, m interface{}) error 
 			return state, state, nil
 		},
 		Timeout:                   d.Timeout(schema.TimeoutDelete),
-		MinTimeout:                5 * time.Second,
-		Delay:                     5 * time.Second,
+		MinTimeout:                membershipSyncMinTimeout,
+		Delay:                     membershipSyncDelay,
 		ContinuousTargetOccurence: 2,
 	}
 	if _, err := stateConf.WaitForStateContext(clients.Ctx); err != nil {
