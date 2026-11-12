@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 			"azuredevops_group":                                       graph.ResourceGroup(),
 			"azuredevops_group_entitlement":                           memberentitlementmanagement.ResourceGroupEntitlement(),
 			"azuredevops_group_membership":                            graph.ResourceGroupMembership(),
+			"azuredevops_iteration":                                   workitemtracking.ResourceIteration(),
 			"azuredevops_iteration_permissions":                       permissions.ResourceIterationPermissions(),
 			"azuredevops_library_permissions":                         permissions.ResourceLibraryPermissions(),
 			"azuredevops_pipeline_authorization":                      build.ResourcePipelineAuthorization(),
