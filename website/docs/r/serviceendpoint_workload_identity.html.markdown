@@ -32,12 +32,12 @@ resource "azuredevops_serviceendpoint_workload_identity" "example" {
   org_url               = "https://dev.azure.com/example"
   tenant_id             = "00000000-0000-0000-0000-000000000002"
   service_principal_id  = "00000000-0000-0000-0000-000000000003"
-  object_id             = azuredevops_service_principal_entitlement.example.origin_id
+  object_id             = "00000000-0000-0000-0000-000000000004"
   subject_descriptor    = azuredevops_service_principal_entitlement.example.descriptor
 }
 ```
 
-`service_principal_id` is the application (client) ID. `object_id` is the object ID of the **enterprise application/service principal**, not the app registration's object ID. Grant the identity access to the relevant projects and resources separately.
+`service_principal_id` is the application (client) ID. For `Application`, `object_id` is the **app registration object ID**, which Azure DevOps uses to create its federated credential. Organization membership uses the separate **enterprise application/service principal object ID** (`origin_id` above), and `subject_descriptor` refers to that membership. For `ManagedIdentity`, `object_id` is the managed identity's **principal object ID**. Grant the identity access to the relevant projects and resources separately.
 
 ### User-assigned managed identity
 
@@ -64,9 +64,11 @@ For a manual federation setup, use two applies:
 1. Set `draft = true` and apply. The provider requests a draft using `data.isDraft` and `isReady`, preserves its ID, and exports the server-generated issuer and subject. A draft is not a usable pipeline connection; check `is_ready`.
 2. Configure a federated identity credential on the app registration or managed identity using `workload_identity_federation_issuer`, `workload_identity_federation_subject` and the audience `api://AzureADTokenExchange`. After the credential exists and has propagated, set `draft = false` and apply again to finalize the same connection.
 
-`draft` controls whether an unfinished connection is acceptable during create/update; `is_ready` reports the actual server state. Draft mode does not disable Azure DevOps' automatic federation behavior, and unrelated API failures still produce an error. If the service has already created the credential automatically, manage or import that credential instead of creating a duplicate.
+`draft` controls whether an unfinished connection is acceptable during create/update; `is_ready` reports the actual server state. Updates use the API's draft-validation path even when `draft = false`; Azure DevOps finalizes the connection after successful validation. Draft mode does not disable Azure DevOps' automatic federation behavior, and unrelated API failures still produce an error. If the service has already created the credential automatically, manage or import that credential instead of creating a duplicate.
 
-If creation fails after Azure DevOps has saved the connection, its ID remains in Terraform state, but Terraform can mark the resource as tainted. Inspect the connection and state before retrying: an ordinary retry can replace a tainted resource. Start with `draft = true` when a manual federation setup is expected.
+Azure DevOps can return an HTTP error after saving a draft, including while a new federated credential propagates. For recognized federation/draft errors, the provider retrieves the matching draft and records its ID. With `draft = true`, it reports a warning so that federation can be completed without recreating the connection. When readiness is required, known Entra federated-credential propagation errors are retried within the configured create/update timeout. Other API errors still fail. With `draft = false`, a saved draft produces an error and Terraform can mark the resource as tainted. Inspect the connection and state before retrying: an ordinary retry can replace a tainted resource. Start with `draft = true` when a manual federation setup is expected.
+
+Renaming an already-ready app-registration connection can cause Azure DevOps to remove or recreate its federated credential. This operation can fail under app-only provider authentication even when manual federation and finalization succeeded. It may require delegated authentication with the corresponding Entra permissions. If an update leaves a draft while `draft = false`, the next plan schedules validation again.
 
 The resource does not create an app registration, managed identity, Azure subscription or organization membership. Deletion uses `deep=false` to avoid asking Azure DevOps to delete the backing service principal. Manage separately owned federated credentials through the appropriate Entra/Azure provider.
 
@@ -79,7 +81,7 @@ The following arguments are supported:
 * `org_url` - (Required) URL of the target Azure DevOps organization. Changing this forces a new resource.
 * `tenant_id` - (Required) Microsoft Entra tenant ID. Changing this forces a new resource.
 * `service_principal_id` - (Required) Application (client) ID of the app registration or managed identity. Changing this forces a new resource.
-* `object_id` - (Required) Object ID of the enterprise application/service principal or managed identity. Changing this forces a new resource.
+* `object_id` - (Required) App registration object ID for `Application`, or principal object ID for `ManagedIdentity`. Changing this forces a new resource.
 * `subject_descriptor` - (Optional) Azure DevOps graph descriptor of the identity in the organization. Available from `azuredevops_service_principal_entitlement.descriptor`, or resolved by Azure DevOps when omitted. Changing this forces a new resource.
 * `service_principal_type` - (Optional) `Application` or `ManagedIdentity`. Defaults to `Application`. Changing this forces a new resource.
 * `managed_identity_resource_id` - (Optional) Azure resource ID of the user-assigned managed identity. Only permitted for `ManagedIdentity`. When omitted, Azure DevOps attempts to resolve it through Azure Resource Graph; supplying it explicitly avoids depending on that discovery. Changing this forces a new resource.

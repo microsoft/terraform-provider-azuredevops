@@ -16,6 +16,7 @@ import (
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/client"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/converter"
+	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/suppress"
 	"github.com/microsoft/terraform-provider-azuredevops/azuredevops/internal/utils/tfhelper"
 )
 
@@ -62,7 +63,7 @@ func ResourceServiceEndpointWorkloadIdentity() *schema.Resource {
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IsUUID,
-			Description:  "Object ID of the service principal in the Microsoft Entra tenant.",
+			Description:  "Object ID of the app registration for Application, or the principal object ID for ManagedIdentity.",
 		},
 		"subject_descriptor": {
 			Type:         schema.TypeString,
@@ -80,11 +81,12 @@ func ResourceServiceEndpointWorkloadIdentity() *schema.Resource {
 			ValidateFunc: validation.StringInSlice([]string{"Application", "ManagedIdentity"}, false),
 		},
 		"managed_identity_resource_id": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotWhiteSpace,
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringIsNotWhiteSpace,
+			DiffSuppressFunc: suppress.CaseDifference,
 		},
 		"draft": {
 			Type:        schema.TypeBool,
@@ -106,6 +108,14 @@ func ResourceServiceEndpointWorkloadIdentity() *schema.Resource {
 		},
 	})
 	r.CustomizeDiff = func(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+		// Validation can change readiness during an update. Mark it unknown so
+		// expressions and outputs use the result of this apply, not the old draft state.
+		needsValidation := d.Id() != "" && !d.Get("draft").(bool) && !d.Get("is_ready").(bool)
+		if d.HasChanges("draft", "service_endpoint_name", "description") || needsValidation {
+			if err := d.SetNewComputed("is_ready"); err != nil {
+				return err
+			}
+		}
 		// Validate an explicitly configured resource ID, not a computed value
 		// retained from a managed identity being replaced with an application.
 		raw := d.GetRawConfig()
@@ -160,6 +170,23 @@ func resourceServiceEndpointWorkloadIdentityCreate(ctx context.Context, d *schem
 		Endpoint: expandServiceEndpointWorkloadIdentity(d),
 	})
 	if err != nil {
+		// The API can save a draft and then return an HTTP error instead of
+		// the endpoint. Recover only recognized federation setup failures and a
+		// matching draft; a name conflict or unrelated permission error must not adopt a resource.
+		if isWorkloadIdentityDraftError(err) {
+			if saved := findWorkloadIdentityDraft(ctx, d, clients); saved != nil {
+				d.SetId(saved.Id.String())
+				if flattenErr := flattenServiceEndpointWorkloadIdentity(d, saved); flattenErr != nil {
+					return diag.FromErr(flattenErr)
+				}
+				if d.Get("draft").(bool) {
+					return diag.Diagnostics{{Severity: diag.Warning, Summary: "Service connection saved as a draft", Detail: fmt.Sprintf("%v Configure its federated credential and apply with draft = false to finalize this connection.", err)}}
+				}
+				if isWorkloadIdentityPropagationError(err) {
+					return updateServiceEndpointWorkloadIdentity(ctx, d, clients, schema.TimeoutCreate)
+				}
+			}
+		}
 		return diag.Errorf("creating Azure DevOps workload identity service endpoint: %v", err)
 	}
 	if ep == nil || ep.Id == nil {
@@ -171,6 +198,42 @@ func resourceServiceEndpointWorkloadIdentityCreate(ctx context.Context, d *schem
 	return finishServiceEndpointWorkloadIdentity(ctx, d, clients, schema.TimeoutCreate)
 }
 
+func isWorkloadIdentityDraftError(err error) bool {
+	message := strings.Trim(err.Error(), "\"")
+	return strings.HasPrefix(message, "The service connection was saved as a draft") ||
+		strings.HasPrefix(message, "Could not create Federated credential for specified service principal.") ||
+		(strings.HasPrefix(message, "A valid refresh token for identity ") && strings.HasSuffix(message, " was not found."))
+}
+
+func isWorkloadIdentityPropagationError(err error) bool {
+	return isWorkloadIdentityDraftError(err) &&
+		(strings.Contains(err.Error(), "AADSTS70021") || strings.Contains(err.Error(), "AADSTS70025"))
+}
+
+func findWorkloadIdentityDraft(ctx context.Context, d *schema.ResourceData, clients *client.AggregatedClient) *serviceendpoint.ServiceEndpoint {
+	endpoints, err := clients.ServiceEndpointClient.GetServiceEndpointsByNames(ctx, serviceendpoint.GetServiceEndpointsByNamesArgs{
+		Project:       converter.String(d.Get("project_id").(string)),
+		EndpointNames: &[]string{d.Get("service_endpoint_name").(string)},
+		Type:          converter.String("workloadidentityuser"),
+		IncludeFailed: converter.Bool(true),
+	})
+	if err != nil || endpoints == nil || len(*endpoints) != 1 {
+		return nil
+	}
+	ep := &(*endpoints)[0]
+	if validateServiceEndpointWorkloadIdentity(ep) != nil || *ep.IsReady || ep.Name == nil ||
+		*ep.Name != d.Get("service_endpoint_name").(string) || *ep.Url != d.Get("org_url").(string) ||
+		!strings.EqualFold(workloadIdentityAuthorizationParameter(ep, "tenantid"), d.Get("tenant_id").(string)) ||
+		!strings.EqualFold(workloadIdentityAuthorizationParameter(ep, "serviceprincipalid"), d.Get("service_principal_id").(string)) ||
+		!strings.EqualFold((*ep.Data)["objectId"], d.Get("object_id").(string)) ||
+		(*ep.Data)["workloadIdentityFederationServicePrincipalType"] != d.Get("service_principal_type").(string) ||
+		workloadIdentityAuthorizationParameter(ep, "workloadIdentityFederationIssuer") == "" ||
+		workloadIdentityAuthorizationParameter(ep, "workloadIdentityFederationSubject") == "" {
+		return nil
+	}
+	return ep
+}
+
 func resourceServiceEndpointWorkloadIdentityRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
 	args, err := serviceEndpointGetArgs(d)
@@ -178,7 +241,7 @@ func resourceServiceEndpointWorkloadIdentityRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 	ep, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(ctx, *args)
-	if utils.ResponseWasNotFound(err) {
+	if utils.ResponseWasNotFound(err) || (err == nil && emptyWorkloadIdentityEndpoint(ep)) {
 		d.SetId("")
 		return nil
 	}
@@ -190,6 +253,10 @@ func resourceServiceEndpointWorkloadIdentityRead(ctx context.Context, d *schema.
 
 func resourceServiceEndpointWorkloadIdentityUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	clients := m.(*client.AggregatedClient)
+	return updateServiceEndpointWorkloadIdentity(ctx, d, clients, schema.TimeoutUpdate)
+}
+
+func updateServiceEndpointWorkloadIdentity(ctx context.Context, d *schema.ResourceData, clients *client.AggregatedClient, timeout string) diag.Diagnostics {
 	args, err := serviceEndpointGetArgs(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -202,6 +269,11 @@ func resourceServiceEndpointWorkloadIdentityUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 	ep := expandServiceEndpointWorkloadIdentity(d)
+	// Updates must enter the service's draft-validation path, including when
+	// finalizing an existing draft. The server sets isReady after validation;
+	// the Terraform draft argument controls whether an unfinished result is allowed.
+	ep.IsReady = converter.Bool(false)
+	(*ep.Data)["isDraft"] = "true"
 	// Preserve the server-generated federation details and identity metadata when
 	// renaming or finalizing a draft. Do not ask the service to generate new trust.
 	parameters := maps.Clone(*current.Authorization.Parameters)
@@ -217,14 +289,26 @@ func resourceServiceEndpointWorkloadIdentityUpdate(ctx context.Context, d *schem
 	maps.Copy(data, *ep.Data)
 	ep.Authorization.Parameters = &parameters
 	ep.Data = &data
-	_, err = clients.ServiceEndpointClient.UpdateServiceEndpoint(ctx, serviceendpoint.UpdateServiceEndpointArgs{
-		EndpointId: ep.Id,
-		Endpoint:   ep,
+	err = retry.RetryContext(ctx, d.Timeout(timeout), func() *retry.RetryError {
+		_, updateErr := clients.ServiceEndpointClient.UpdateServiceEndpoint(ctx, serviceendpoint.UpdateServiceEndpointArgs{
+			EndpointId: ep.Id,
+			Endpoint:   ep,
+		})
+		if updateErr == nil {
+			return nil
+		}
+		if !d.Get("draft").(bool) && isWorkloadIdentityPropagationError(updateErr) {
+			return retry.RetryableError(updateErr)
+		}
+		return retry.NonRetryableError(updateErr)
 	})
 	if err != nil {
+		if d.Get("draft").(bool) && isWorkloadIdentityDraftError(err) {
+			return finishServiceEndpointWorkloadIdentity(ctx, d, clients, timeout)
+		}
 		return diag.Errorf("updating Azure DevOps workload identity service endpoint: %v", err)
 	}
-	return finishServiceEndpointWorkloadIdentity(ctx, d, clients, schema.TimeoutUpdate)
+	return finishServiceEndpointWorkloadIdentity(ctx, d, clients, timeout)
 }
 
 func finishServiceEndpointWorkloadIdentity(ctx context.Context, d *schema.ResourceData, clients *client.AggregatedClient, timeout string) diag.Diagnostics {
@@ -298,8 +382,8 @@ func resourceServiceEndpointWorkloadIdentityDelete(ctx context.Context, d *schem
 			Pending: []string{"Present"}, Target: []string{"Deleted"},
 			Timeout: d.Timeout(schema.TimeoutDelete), MinTimeout: time.Second,
 			Refresh: func() (interface{}, string, error) {
-				_, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(ctx, *args)
-				if utils.ResponseWasNotFound(err) {
+				ep, err := clients.ServiceEndpointClient.GetServiceEndpointDetails(ctx, *args)
+				if utils.ResponseWasNotFound(err) || (err == nil && emptyWorkloadIdentityEndpoint(ep)) {
 					return true, "Deleted", nil
 				}
 				return false, "Present", err
@@ -311,6 +395,12 @@ func resourceServiceEndpointWorkloadIdentityDelete(ctx context.Context, d *schem
 	}
 	d.SetId("")
 	return nil
+}
+
+func emptyWorkloadIdentityEndpoint(ep *serviceendpoint.ServiceEndpoint) bool {
+	// The details API returns HTTP 200 with JSON null after deletion. The SDK
+	// decodes that as an empty struct. A partially populated response is not absent.
+	return ep == nil || *ep == (serviceendpoint.ServiceEndpoint{})
 }
 
 func validateServiceEndpointWorkloadIdentity(ep *serviceendpoint.ServiceEndpoint) error {

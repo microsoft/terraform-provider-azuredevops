@@ -172,6 +172,76 @@ func TestServiceEndpointWorkloadIdentity_CreateDraft(t *testing.T) {
 	}
 }
 
+func TestServiceEndpointWorkloadIdentity_CreateHTTPErrorWithSavedDraft(t *testing.T) {
+	for _, message := range []string{
+		`"The service connection was saved as a draft due to a possibly temporary issue and will be validated later. Error details: credential requires configuration".`,
+		"Could not create Federated credential for specified service principal. Endpoint: example. Reason: authorization failed",
+		"A valid refresh token for identity 11111111-1111-1111-1111-111111111111 was not found.",
+	} {
+		for _, draft := range []bool{false, true} {
+			t.Run(message+fmtBool(draft), func(t *testing.T) {
+				r := ResourceServiceEndpointWorkloadIdentity()
+				config := workloadIdentityTestConfig()
+				config["draft"] = draft
+				d := schema.TestResourceDataRaw(t, r.Schema, config)
+				ep := workloadIdentityTestEndpoint()
+				ep.IsReady = converter.Bool(false)
+				mock, clients := workloadIdentityTestClient(t)
+				mock.EXPECT().CreateServiceEndpoint(gomock.Any(), gomock.Any()).Return(nil, errors.New(message))
+				mock.EXPECT().GetServiceEndpointsByNames(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, args serviceendpoint.GetServiceEndpointsByNamesArgs) (*[]serviceendpoint.ServiceEndpoint, error) {
+					require.True(t, *args.IncludeFailed)
+					require.Equal(t, config["project_id"], *args.Project)
+					require.Equal(t, []string{"workload-identity"}, *args.EndpointNames)
+					return &[]serviceendpoint.ServiceEndpoint{*ep}, nil
+				})
+				diagnostics := r.CreateContext(context.Background(), d, clients)
+				require.Equal(t, !draft, diagnostics.HasError())
+				require.Equal(t, ep.Id.String(), d.Id())
+				require.Equal(t, "server-generated-subject", d.Get("workload_identity_federation_subject"))
+				require.False(t, d.Get("is_ready").(bool))
+			})
+		}
+	}
+}
+
+func TestServiceEndpointWorkloadIdentity_DraftRecoveryDoesNotAdoptOtherEndpoint(t *testing.T) {
+	for _, scenario := range []string{"conflict", "different identity", "missing federation", "multiple matches", "lookup denied"} {
+		t.Run(scenario, func(t *testing.T) {
+			r := ResourceServiceEndpointWorkloadIdentity()
+			config := workloadIdentityTestConfig()
+			config["draft"] = true
+			d := schema.TestResourceDataRaw(t, r.Schema, config)
+			ep := workloadIdentityTestEndpoint()
+			ep.IsReady = converter.Bool(false)
+			message := "The service connection was saved as a draft due to a possibly temporary issue"
+			if scenario == "conflict" {
+				message = "Service connection with name workload-identity already exists."
+			}
+			if scenario == "different identity" {
+				(*ep.Data)["objectId"] = "different-object-id"
+			}
+			if scenario == "missing federation" {
+				delete(*ep.Authorization.Parameters, "workloadIdentityFederationSubject")
+			}
+			mock, clients := workloadIdentityTestClient(t)
+			mock.EXPECT().CreateServiceEndpoint(gomock.Any(), gomock.Any()).Return(nil, errors.New(message))
+			if scenario != "conflict" {
+				endpoints := []serviceendpoint.ServiceEndpoint{*ep}
+				var lookupErr error
+				if scenario == "multiple matches" {
+					endpoints = append(endpoints, *ep)
+				}
+				if scenario == "lookup denied" {
+					lookupErr = errors.New("permission denied")
+				}
+				mock.EXPECT().GetServiceEndpointsByNames(gomock.Any(), gomock.Any()).Return(&endpoints, lookupErr)
+			}
+			require.True(t, r.CreateContext(context.Background(), d, clients).HasError())
+			require.Empty(t, d.Id())
+		})
+	}
+}
+
 func TestServiceEndpointWorkloadIdentity_UpdatePreservesFederation(t *testing.T) {
 	r := ResourceServiceEndpointWorkloadIdentity()
 	config := workloadIdentityTestConfig()
@@ -187,12 +257,14 @@ func TestServiceEndpointWorkloadIdentity_UpdatePreservesFederation(t *testing.T)
 		mock.EXPECT().UpdateServiceEndpoint(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, args serviceendpoint.UpdateServiceEndpointArgs) (*serviceendpoint.ServiceEndpoint, error) {
 			require.Equal(t, ep.Id, args.EndpointId)
 			require.Equal(t, "renamed", *args.Endpoint.Name)
-			require.True(t, *args.Endpoint.IsReady)
+			require.False(t, *args.Endpoint.IsReady)
+			require.Equal(t, "true", (*args.Endpoint.Data)["isDraft"])
 			require.Equal(t, "preserve-me", (*args.Endpoint.Data)["serverMetadata"])
 			require.Equal(t, "server-generated-subject", (*args.Endpoint.Authorization.Parameters)["workloadIdentityFederationSubject"])
 			require.Equal(t, (*ep.Authorization.Parameters)["workloadIdentityFederationIssuer"], (*args.Endpoint.Authorization.Parameters)["workloadIdentityFederationIssuer"])
 			require.Len(t, *args.Endpoint.Authorization.Parameters, 4)
 			ep = args.Endpoint
+			ep.IsReady = converter.Bool(true)
 			return ep, nil
 		}),
 		mock.EXPECT().GetServiceEndpointDetails(gomock.Any(), gomock.Any()).DoAndReturn(func(context.Context, serviceendpoint.GetServiceEndpointDetailsArgs) (*serviceendpoint.ServiceEndpoint, error) {
@@ -202,6 +274,22 @@ func TestServiceEndpointWorkloadIdentity_UpdatePreservesFederation(t *testing.T)
 	require.Empty(t, r.UpdateContext(context.Background(), d, clients))
 	require.Equal(t, true, d.Get("is_ready"))
 	require.Equal(t, "renamed", d.Get("service_endpoint_name"))
+}
+
+func TestServiceEndpointWorkloadIdentity_UpdateRetriesCredentialPropagation(t *testing.T) {
+	r := ResourceServiceEndpointWorkloadIdentity()
+	d := schema.TestResourceDataRaw(t, r.Schema, workloadIdentityTestConfig())
+	ep := workloadIdentityTestEndpoint()
+	d.SetId(ep.Id.String())
+	mock, clients := workloadIdentityTestClient(t)
+	gomock.InOrder(
+		mock.EXPECT().GetServiceEndpointDetails(gomock.Any(), gomock.Any()).Return(ep, nil),
+		mock.EXPECT().UpdateServiceEndpoint(gomock.Any(), gomock.Any()).Return(nil, errors.New("The service connection was saved as a draft. AADSTS700213: No matching federated identity record found")),
+		mock.EXPECT().UpdateServiceEndpoint(gomock.Any(), gomock.Any()).Return(ep, nil),
+		mock.EXPECT().GetServiceEndpointDetails(gomock.Any(), gomock.Any()).Return(ep, nil),
+	)
+	require.Empty(t, r.UpdateContext(context.Background(), d, clients))
+	require.True(t, d.Get("is_ready").(bool))
 }
 
 func TestServiceEndpointWorkloadIdentity_ReadImport(t *testing.T) {
@@ -252,6 +340,24 @@ func TestServiceEndpointWorkloadIdentity_ReadNotFoundAndErrors(t *testing.T) {
 		diagnostics := r.ReadContext(context.Background(), d, clients)
 		require.Equal(t, code != 404, diagnostics.HasError())
 		require.Equal(t, code == 404, d.Id() == "")
+	}
+}
+
+func TestServiceEndpointWorkloadIdentity_NullMeansAbsent(t *testing.T) {
+	for _, ep := range []*serviceendpoint.ServiceEndpoint{nil, {}} {
+		r := ResourceServiceEndpointWorkloadIdentity()
+		d := schema.TestResourceDataRaw(t, r.Schema, workloadIdentityTestConfig())
+		d.SetId(workloadIdentityTestEndpoint().Id.String())
+		mock, clients := workloadIdentityTestClient(t)
+		mock.EXPECT().GetServiceEndpointDetails(gomock.Any(), gomock.Any()).Return(ep, nil)
+		require.Empty(t, r.ReadContext(context.Background(), d, clients))
+		require.Empty(t, d.Id())
+
+		d.SetId(workloadIdentityTestEndpoint().Id.String())
+		mock.EXPECT().DeleteServiceEndpoint(gomock.Any(), gomock.Any()).Return(nil)
+		mock.EXPECT().GetServiceEndpointDetails(gomock.Any(), gomock.Any()).Return(ep, nil)
+		require.Empty(t, r.DeleteContext(context.Background(), d, clients))
+		require.Empty(t, d.Id())
 	}
 }
 
@@ -319,6 +425,52 @@ func TestServiceEndpointWorkloadIdentity_ReplaceManagedIdentityWithApplication(t
 	diff, err := r.Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
 	require.NoError(t, err)
 	require.True(t, diff.RequiresNew())
+}
+
+func TestServiceEndpointWorkloadIdentity_ManagedIdentityResourceIDCase(t *testing.T) {
+	r := ResourceServiceEndpointWorkloadIdentity()
+	config := workloadIdentityTestConfig()
+	config["service_principal_type"] = "ManagedIdentity"
+	config["managed_identity_resource_id"] = "/subscriptions/example/resourcegroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
+	d := schema.TestResourceDataRaw(t, r.Schema, config)
+	ep := workloadIdentityTestEndpoint()
+	(*ep.Data)["workloadIdentityFederationServicePrincipalType"] = "ManagedIdentity"
+	// Azure DevOps canonicalizes the segment returned lowercase by Azure ARM.
+	(*ep.Data)["managedIdentityResourceId"] = "/subscriptions/example/resourceGroups/example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/example"
+	require.NoError(t, flattenServiceEndpointWorkloadIdentity(d, ep))
+	diff, err := r.Diff(context.Background(), d.State(), terraform.NewResourceConfigRaw(config), nil)
+	require.NoError(t, err)
+	require.True(t, diff.Empty(), "casing alone must not replace the connection")
+}
+
+func TestServiceEndpointWorkloadIdentity_FinalizationRecomputesReadiness(t *testing.T) {
+	r := ResourceServiceEndpointWorkloadIdentity()
+	config := workloadIdentityTestConfig()
+	config["draft"] = true
+	d := schema.TestResourceDataRaw(t, r.Schema, config)
+	ep := workloadIdentityTestEndpoint()
+	ep.IsReady = converter.Bool(false)
+	require.NoError(t, flattenServiceEndpointWorkloadIdentity(d, ep))
+	config["draft"] = false
+	diff, err := r.Diff(context.Background(), d.State(), terraform.NewResourceConfigRaw(config), nil)
+	require.NoError(t, err)
+	require.False(t, diff.RequiresNew())
+	require.NotNil(t, diff.Attributes["is_ready"])
+	require.True(t, diff.Attributes["is_ready"].NewComputed)
+}
+
+func TestServiceEndpointWorkloadIdentity_UnreadyConnectionPlansValidation(t *testing.T) {
+	r := ResourceServiceEndpointWorkloadIdentity()
+	config := workloadIdentityTestConfig()
+	d := schema.TestResourceDataRaw(t, r.Schema, config)
+	ep := workloadIdentityTestEndpoint()
+	ep.IsReady = converter.Bool(false)
+	require.NoError(t, flattenServiceEndpointWorkloadIdentity(d, ep))
+	diff, err := r.Diff(context.Background(), d.State(), terraform.NewResourceConfigRaw(config), nil)
+	require.NoError(t, err)
+	require.False(t, diff.RequiresNew())
+	require.NotNil(t, diff.Attributes["is_ready"])
+	require.True(t, diff.Attributes["is_ready"].NewComputed, "an unready connection must not produce a no-op plan when draft is false")
 }
 
 func TestServiceEndpointWorkloadIdentity_DraftDoesNotHideUnrelatedFailure(t *testing.T) {
