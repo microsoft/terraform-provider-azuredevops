@@ -70,7 +70,7 @@ Azure DevOps can return an HTTP error after saving a draft, including while a ne
 
 Renaming an already-ready app-registration connection can cause Azure DevOps to remove or recreate its federated credential. This operation can fail under app-only provider authentication even when manual federation and finalization succeeded. It may require delegated authentication with the corresponding Entra permissions. If an update leaves a draft while `draft = false`, the next plan schedules validation again.
 
-The resource does not create an app registration, managed identity, Azure subscription or organization membership. Deletion uses `deep=false` to avoid asking Azure DevOps to delete the backing service principal. Manage separately owned federated credentials through the appropriate Entra/Azure provider.
+The resource does not create an app registration, managed identity, Azure subscription or organization membership. Deletion uses `deep=false` to avoid asking Azure DevOps to delete the backing service principal. Azure DevOps can still attempt federated-credential cleanup during deletion of either identity type and reject app-only authentication with an error about removing federated credentials. In that case, use delegated authentication with the corresponding Entra/Azure permissions to delete the connection. Manage separately owned federated credentials through the appropriate Entra/Azure provider.
 
 ## Argument Reference
 
