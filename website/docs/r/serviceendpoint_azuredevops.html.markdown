@@ -9,6 +9,8 @@ description: |-
 
 Manages an Azure DevOps service endpoint within Azure DevOps.
 
+For the native Azure DevOps service connection using a Microsoft Entra app registration or managed identity, use [`azuredevops_serviceendpoint_workload_identity`](serviceendpoint_workload_identity.html) instead. This resource manages the `AZDOAPI` connection from the Configurable Pipeline Runner extension.
+
 ~> **Note** This resource is duplicate with `azuredevops_serviceendpoint_runpipeline`,  will be removed in the future, use `azuredevops_serviceendpoint_runpipeline` instead.
 
 ~> **Note** Prerequisite: Extension [Configurable Pipeline Runner](https://marketplace.visualstudio.com/items?itemName=CSE-DevOps.RunPipelines) has been installed for the organization. 
