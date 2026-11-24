@@ -67,6 +67,10 @@ func CreateClassificationNodeSchema(outer map[string]*schema.Schema) map[string]
 				},
 			},
 		},
+		"attributes": {
+			Type:     schema.TypeMap,
+			Computed: true,
+		},
 	}
 
 	for key, elem := range baseSchema {
@@ -114,6 +118,10 @@ func ReadClassificationNode(clients *client.AggregatedClient, d *schema.Resource
 
 	if node.HasChildren != nil {
 		d.Set("has_children", converter.ToBool(node.HasChildren, false))
+	}
+
+	if node.Attributes != nil {
+		d.Set("attributes", *node.Attributes)
 	}
 
 	d.Set("children", flattenClassificationChildNodes(projectID, node.Children))
