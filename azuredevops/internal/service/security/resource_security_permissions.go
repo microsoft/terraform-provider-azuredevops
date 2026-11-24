@@ -1,6 +1,7 @@
 package security
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -18,10 +19,11 @@ import (
 // ResourceGenericPermissions schema and implementation for generic permission resource
 func ResourceGenericPermissions() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGenericPermissionsCreateOrUpdate,
-		Read:   resourceGenericPermissionsRead,
-		Update: resourceGenericPermissionsCreateOrUpdate,
-		Delete: resourceGenericPermissionsDelete,
+		Create:        resourceGenericPermissionsCreateOrUpdate,
+		Read:          resourceGenericPermissionsRead,
+		Update:        resourceGenericPermissionsCreateOrUpdate,
+		Delete:        resourceGenericPermissionsDelete,
+		CustomizeDiff: validatePermissionNames,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Read:   schema.DefaultTimeout(5 * time.Minute),
@@ -158,12 +160,21 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 		AccessControlEntries: &[]security.AccessControlEntry{ace},
 	}
 
+	// Determine if this is an update (ID already set) for state recovery on failure
+	isUpdate := d.Id() != ""
+
 	// Set ACL
 	_, err = clients.SecurityClient.SetAccessControlEntries(clients.Ctx, security.SetAccessControlEntriesArgs{
 		SecurityNamespaceId: &namespaceID,
 		Container:           container,
 	})
 	if err != nil {
+		if isUpdate {
+			// On update failure, read actual state from API to prevent state corruption
+			if readErr := resourceGenericPermissionsRead(d, m); readErr != nil {
+				log.Printf("[WARN] Failed to refresh state after update error: %v", readErr)
+			}
+		}
 		return fmt.Errorf("setting permissions: %v", err)
 	}
 
@@ -231,6 +242,11 @@ func resourceGenericPermissionsCreateOrUpdate(d *schema.ResourceData, m interfac
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil { //nolint:staticcheck
+		if isUpdate {
+			if readErr := resourceGenericPermissionsRead(d, m); readErr != nil {
+				log.Printf("[WARN] Failed to refresh state after sync error: %v", readErr)
+			}
+		}
 		return fmt.Errorf("waiting for permission update: %v", err)
 	}
 
@@ -536,6 +552,55 @@ func resourceGenericPermissionsDelete(d *schema.ResourceData, m interface{}) err
 	}
 
 	log.Printf("[INFO] Successfully removed managed permissions from ACE for principal %s", principal)
+	return nil
+}
+
+// validatePermissionNames validates at plan time that all specified permission
+// names exist in the target security namespace.
+func validatePermissionNames(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+	clients := m.(*client.AggregatedClient)
+
+	namespaceID, err := uuid.Parse(d.Get("namespace_id").(string))
+	if err != nil {
+		return fmt.Errorf("invalid namespace_id: %v", err)
+	}
+
+	permissions := d.Get("permissions").(map[string]interface{})
+	if len(permissions) == 0 {
+		return nil
+	}
+
+	namespaces, err := clients.SecurityClient.QuerySecurityNamespaces(clients.Ctx, security.QuerySecurityNamespacesArgs{
+		SecurityNamespaceId: &namespaceID,
+	})
+	if err != nil {
+		return fmt.Errorf("querying security namespace during validation: %v", err)
+	}
+	if namespaces == nil || len(*namespaces) == 0 {
+		return fmt.Errorf("namespace %s not found", namespaceID.String())
+	}
+
+	namespace := (*namespaces)[0]
+	actionMap := make(map[string]bool)
+	if namespace.Actions != nil {
+		for _, action := range *namespace.Actions {
+			if action.Name != nil {
+				actionMap[*action.Name] = true
+			}
+		}
+	}
+
+	var invalidPerms []string
+	for permName := range permissions {
+		if !actionMap[permName] {
+			invalidPerms = append(invalidPerms, permName)
+		}
+	}
+
+	if len(invalidPerms) > 0 {
+		return fmt.Errorf("the following permissions are not valid for namespace %s: %s", namespaceID.String(), strings.Join(invalidPerms, ", "))
+	}
+
 	return nil
 }
 
